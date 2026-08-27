@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serve Tracker — SLU Volleyball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#00244D;
+    --blue:#003DA5;
+    --gold:#FFC72C;
+    --gray:#C8C9C7;
+    --beige:#E3DECB;
+    --bronze:#795D3E;
+    --ink:#12203A;
+    --paper:#F3F4F2;
+    --white:#FFFFFF;
+    --heat-0:#EDF0F4;
+    --line:#D8DBDD;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Barlow Semi Condensed', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+  }
+  button{font-family:inherit;}
+  a{color:inherit;}
+
+  /* ---------- header ---------- */
+  header{
+    background:linear-gradient(135deg,var(--navy),#001630);
+    color:var(--white);
+    padding:18px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+    border-bottom:4px solid var(--gold);
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .brand .display{font-size:28px;line-height:1;color:var(--white);}
+  .brand .sub{font-size:14px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:600;}
+  .header-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .opp-field{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 8px 6px 16px;}
+  .opp-field span{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);}
+  .opp-field input{
+    background:transparent;border:none;color:var(--white);font-family:'Barlow Semi Condensed',sans-serif;
+    font-size:16px;font-weight:600;padding:6px 8px;width:180px;outline:none;
+  }
+  .opp-field input::placeholder{color:rgba(255,255,255,.5);}
+  .btn{
+    border:none;border-radius:999px;padding:10px 20px;font-size:14px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn-gold{background:var(--gold);color:var(--navy);}
+  .btn-gold:hover{box-shadow:0 4px 14px rgba(255,199,44,.45);}
+  .btn-ghost{background:transparent;color:var(--gray);border:1px solid rgba(255,255,255,.3);}
+  .btn-ghost:hover{color:var(--white);border-color:var(--white);}
+
+  /* ---------- layout ---------- */
+  main{
+    display:grid;
+    grid-template-columns:1fr minmax(340px,460px);
+    gap:22px;
+    padding:24px 28px 60px;
+    align-items:start;
+  }
+  @media (max-width:1000px){
+    main{grid-template-columns:1fr;}
+    .heatmap-panel{position:static;}
+  }
+  .panel{
+    background:var(--white);
+    border-radius:16px;
+    box-shadow:0 1px 3px rgba(0,36,77,.08), 0 8px 24px rgba(0,36,77,.06);
+    padding:22px;
+  }
+  .panel-title{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;
+  }
+  .panel-title h2{font-size:20px;color:var(--navy);margin:0;}
+  .eyebrow{
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);font-weight:700;margin:0 0 4px;
+  }
+
+  /* ---------- heat map panel ---------- */
+  .heatmap-panel{position:sticky;top:20px;}
+  .view-toggle{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
+  .pill{
+    border:1.5px solid var(--line);background:var(--white);color:var(--navy);
+    border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;
+    cursor:pointer;transition:.12s ease;
+  }
+  .pill:hover{border-color:var(--blue);}
+  .pill.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .pill.match-pill.active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+
+  .court-wrap{display:flex;gap:10px;}
+  .depth-labels{display:flex;flex-direction:column;justify-content:space-between;padding:34px 0 6px;}
+  .depth-labels div{
+    font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);font-weight:700;
+    writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
+  }
+  .court{flex:1;}
+  .seam-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;}
+  .seam-labels div{text-align:center;font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.06em;}
+  .net{
+    height:12px;border-radius:3px;margin-bottom:6px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,36,77,.55) 0 1.5px, transparent 1.5px 8px),
+      linear-gradient(var(--gray),var(--gray));
+    border:1px solid var(--navy);
+  }
+  .grid4x3{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;}
+  .cell{
+    aspect-ratio:1/.82;
+    border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+    border:1px solid var(--line);
+    transition:transform .1s ease;
+  }
+  .cell .count{font-family:'Anton',sans-serif;font-size:22px;color:var(--navy);}
+  .cell .count.zero{color:#B7BFC9;font-size:16px;}
+  .cell.hot{outline:2.5px solid var(--gold);outline-offset:-2.5px;}
+  .cell.hot::after{
+    content:"★";position:absolute;top:3px;right:5px;font-size:10px;color:var(--gold);
+  }
+  .legend{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:12px;color:#5A6472;}
+  .legend .bar{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--heat-0),var(--blue));}
+  .stat-row{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;}
+  .stat{background:var(--paper);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;}
+  .stat .n{font-family:'Anton',sans-serif;font-size:26px;color:var(--blue);line-height:1;}
+  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#69707C;margin-top:4px;}
+
+  /* ---------- entry panel ---------- */
+  .entry-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .set-select-wrap{display:flex;align-items:center;gap:10px;}
+  .set-select-wrap label{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;}
+  select{
+    font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--navy);
+    border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--white);cursor:pointer;
+  }
+  .hint{font-size:12.5px;color:#7A8290;margin:6px 0 18px;}
+
+  .rotation-grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;
+  }
+  @media (max-width:1000px){ .rotation-grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:720px){ .rotation-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){ .rotation-grid{grid-template-columns:1fr;} }
+  .rotation-card{
+    border:1.5px solid var(--line);border-radius:12px;padding:14px;background:#FBFBFA;
+  }
+  .rotation-card .rc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .rotation-card .rc-head .rname{font-family:'Anton',sans-serif;font-size:17px;color:var(--navy);}
+  .rotation-card .rc-head .rtotal{font-size:12px;color:var(--bronze);font-weight:700;}
+  .undo-btn{
+    background:none;border:none;color:#9AA1AC;font-size:12px;cursor:pointer;text-decoration:underline;
+    padding:8px 0 0;display:inline-block;
+  }
+  .undo-btn:hover{color:var(--blue);}
+
+  .master-entry{
+    background:linear-gradient(180deg,#FBFBFA,#F3F4F2);
+    border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 18px;margin-bottom:22px;
+  }
+  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:#8A919C;font-weight:700;margin:0 0 5px;}
+  .rotation-btn{
+    flex:1;min-height:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
+    font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:.1s ease;-webkit-tap-highlight-color:transparent;
+  }
+  .rotation-btn:active{transform:scale(.95);}
+  .rotation-btn.active{background:var(--navy);border-color:var(--navy);color:var(--white);}
+  .master-entry .submit-btn{margin-top:4px;min-height:60px;font-size:18px;}
+  .master-entry .last-logged{text-align:center;}
+  .selector-row{display:flex;gap:6px;margin-bottom:10px;}
+  .seam-btn, .depth-btn{
+    flex:1;min-height:56px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
+    font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:.1s ease;-webkit-tap-highlight-color:transparent;
+  }
+  .depth-btn{flex-direction:column;gap:2px;line-height:1;}
+  .depth-btn .letter{font-family:'Anton',sans-serif;font-size:18px;}
+  .depth-btn .hint-word{font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em;opacity:.7;}
+  .depth-btn.active .hint-word{opacity:.85;}
+  .seam-btn:active, .depth-btn:active{transform:scale(.95);}
+  .seam-btn.active, .depth-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .submit-btn{
+    width:100%;min-height:56px;border-radius:10px;border:none;background:var(--gold);color:var(--navy);
+    font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+    transition:.12s ease;-webkit-tap-highlight-color:transparent;
+  }
+  .submit-btn:active{transform:scale(.97);}
+  .submit-btn:disabled{background:#E7E9EA;color:#AEB4BC;cursor:not-allowed;}
+  .submit-btn.logged{background:#2E9E5B;color:var(--white);}
+  .last-logged{font-size:12px;color:#7A8290;margin-top:8px;min-height:16px;}
+
+  .log-section{border-top:1px solid var(--line);padding-top:16px;}
+  .log-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+  .log-empty{color:#9AA1AC;font-size:14px;padding:10px 0;}
+  .log-row{
+    display:flex;align-items:center;justify-content:space-between;background:var(--paper);
+    border-radius:8px;padding:8px 12px;font-size:13.5px;
+  }
+  .log-row .tag{
+    display:inline-block;background:var(--blue);color:var(--white);font-weight:700;font-size:11px;
+    border-radius:4px;padding:2px 6px;margin-right:8px;
+  }
+  .log-row button{
+    background:none;border:none;color:#B04A4A;font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;
+  }
+  .log-row button:hover{color:#7d2f2f;}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);
+    background:var(--navy);color:var(--white);padding:10px 20px;border-radius:999px;font-size:13px;
+    font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  footer{
+    text-align:center;color:#98A0AB;font-size:12px;padding:10px 0 30px;
+  }
+
+  /* ---------- print / PDF export ---------- */
+  #printReport{display:none;}
+  @media print{
+    header .header-controls, .btn-ghost, .undo-btn, .log-row button{cursor:default;}
+    body{background:var(--white);}
+    .screen-only{display:none !important;}
+    #printReport{display:block !important;padding:20px;}
+  }
+  .pr-title{font-family:'Anton',sans-serif;font-size:26px;color:var(--navy);margin:0 0 2px;}
+  .pr-sub{font-size:14px;color:#555;margin:0 0 20px;}
+  .pr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px;}
+  .pr-card{border:1px solid var(--line);border-radius:10px;padding:10px;}
+  .pr-card h4{font-family:'Anton',sans-serif;font-size:13px;color:var(--navy);margin:0 0 6px;text-align:center;letter-spacing:.06em;}
+  .pr-net{height:6px;background:var(--gray);border:1px solid var(--navy);border-radius:2px;margin-bottom:4px;}
+  .pr-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+  .pr-mini-cell{aspect-ratio:1/.85;border:1px solid var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);}
+  table.pr-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;}
+  table.pr-table th, table.pr-table td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
+  table.pr-table th{background:var(--navy);color:var(--white);font-weight:600;}
+  table.pr-table td:first-child, table.pr-table th:first-child{text-align:left;}
+</style>
+</head>
+<body>
+
+<div class="screen-only">
+  <header>
+    <div class="brand">
+      <div class="display">Serve Tracker</div>
+      <div class="sub">SLU Volleyball</div>
+    </div>
+    <div class="header-controls">
+      <div class="opp-field">
+        <span>vs</span>
+        <input id="opponentInput" type="text" placeholder="Opponent name" />
+      </div>
+      <button class="btn btn-ghost" id="clearBtn" type="button">Reset Data</button>
+      <button class="btn btn-gold" id="exportBtn" type="button">Export PDF</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: ENTRY -->
+    <section class="panel entry-panel">
+      <div class="entry-header">
+        <div>
+          <p class="eyebrow">Log serves</p>
+          <h2 style="margin:0;color:var(--navy);font-size:20px;">By Rotation</h2>
+        </div>
+        <div class="set-select-wrap">
+          <label for="entrySetSelect">Recording for</label>
+          <select id="entrySetSelect"></select>
+        </div>
+      </div>
+      <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. Your picks stay selected so back-to-back serves to the same spot are a quick double-tap — just switch the rotation whenever you rotate.</p>
+
+      <div class="master-entry">
+        <p class="selector-label">Rotation</p>
+        <div class="selector-row rotation-row" id="rotationRow"></div>
+        <p class="selector-label">Seam</p>
+        <div class="selector-row seam-row" id="seamRow"></div>
+        <p class="selector-label">Depth</p>
+        <div class="selector-row depth-row" id="depthRow"></div>
+        <button class="submit-btn" id="universalEnter" type="button" disabled>Enter</button>
+        <div class="last-logged" id="universalLast"></div>
+      </div>
+
+      <p class="selector-label" style="margin-top:22px;">Rotation totals — <span id="rotTotalsSetLabel">Set 1</span></p>
+      <div class="rotation-grid" id="rotationGrid"></div>
+
+      <div class="log-section">
+        <div class="panel-title" style="margin-bottom:10px;">
+          <h2 style="font-size:16px;">Recent Serves — <span id="logSetLabel">Set 1</span></h2>
+        </div>
+        <div class="log-list" id="logList"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: HEAT MAP -->
+    <section class="panel heatmap-panel">
+      <p class="eyebrow">Where we're being served</p>
+      <div class="panel-title">
+        <h2 id="heatmapTitle">Match Total</h2>
+      </div>
+      <div class="view-toggle" id="viewToggle"></div>
+
+      <div class="court-wrap">
+        <div class="depth-labels"><div>A · Short</div><div>B · Medium</div><div>C · Deep</div></div>
+        <div class="court">
+          <div class="seam-labels">
+            <div>Seam 1</div><div>Seam 2</div><div>Seam 3</div><div>Seam 4</div>
+          </div>
+          <div class="net"></div>
+          <div class="grid4x3" id="heatmapGrid"></div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span>Fewer</span>
+        <div class="bar"></div>
+        <span>More</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Serves shown</div></div>
+        <div class="stat"><div class="n" id="statHot">—</div><div class="l">Hot zone</div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Data is saved to your device automatically. SLU Blue · Gateway Gold — Go Billikens.</footer>
+</div>
+
+<div id="printReport"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const SEAMS = [1,2,3,4];
+  const DEPTHS = ['a','b','c'];
+  const DEPTH_LABEL = {a:'A', b:'B', c:'C'};
+  const DEPTH_HINT = {a:'Short', b:'Medium', c:'Deep'};
+  const SETS = [1,2,3,4,5];
+  const ROTATIONS = [1,2,3,4,5,6];
+  const STORAGE_KEY = 'serve-tracker-state';
+
+  let state = { opponent:'', serves:[] };
+  let entrySet = 1;
+  let heatmapView = 'match'; // 'set1'..'set5' or 'match'
+  let lastAdded = null; // {rotation, seam, depth} — used to trigger the click-feedback flash
+  const universalSelection = {rotation:null, seam:null, depth:null}; // shared picker state for the one Enter button
+
+  // ---------- persistence ----------
+  function hasClaudeStorage(){
+    return typeof window !== 'undefined' && window.storage && typeof window.storage.get === 'function';
+  }
+  async function loadState(){
+    let loaded = false;
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(parsed && Array.isArray(parsed.serves)){ state = parsed; loaded = true; }
+      }
+    }catch(e){ console.error('Local storage read failed', e); }
+
+    if(!loaded && hasClaudeStorage()){
+      try{
+        const res = await window.storage.get(STORAGE_KEY, false);
+        if(res && res.value){
+          const parsed = JSON.parse(res.value);
+          if(parsed && Array.isArray(parsed.serves)){ state = parsed; }
+        }
+      }catch(e){ /* nothing saved there either */ }
+    }
+    renderAll();
+  }
+  async function saveState(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){
+      console.error('Local storage write failed', e);
+      showToast('Could not save on this device — data may be lost on reload');
+    }
+    if(hasClaudeStorage()){
+      try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }
+      catch(e){ /* secondary mirror only, ok to ignore */ }
+    }
+  }
+
+  // ---------- helpers ----------
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+  function filterServes({set, rotation}){
+    return state.serves.filter(s=>{
+      if(set !== undefined && s.set !== set) return false;
+      if(rotation !== undefined && s.rotation !== rotation) return false;
+      return true;
+    });
+  }
+
+  function countMatrix(list){
+    const m = {};
+    SEAMS.forEach(sm=>{ m[sm] = {}; DEPTHS.forEach(d=> m[sm][d]=0 ); });
+    list.forEach(s=>{ if(m[s.seam] && m[s.seam][s.depth]!==undefined) m[s.seam][s.depth]++; });
+    return m;
+  }
+
+  function maxOf(matrix){
+    let mx = 0;
+    SEAMS.forEach(sm=> DEPTHS.forEach(d=> { if(matrix[sm][d] > mx) mx = matrix[sm][d]; }));
+    return mx;
+  }
+
+  function hexLerp(c1, c2, t){
+    const a = parseInt(c1.slice(1),16), b = parseInt(c2.slice(1),16);
+    const ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
+    const br=(b>>16)&255, bg=(b>>8)&255, bb=b&255;
+    const r = Math.round(ar+(br-ar)*t), g = Math.round(ag+(bg-ag)*t), bl = Math.round(ab+(bb-ab)*t);
+    return `rgb(${r},${g},${bl})`;
+  }
+  function heatColor(count, max){
+    if(count===0) return 'var(--heat-0)';
+    const t = max>0 ? count/max : 0;
+    return hexLerp('#E8EDF5','#003DA5', Math.min(1, 0.28 + t*0.72));
+  }
+  function textColorFor(count, max){
+    if(count===0) return null;
+    const t = max>0 ? count/max : 0;
+    return t > 0.55 ? '#FFFFFF' : 'var(--navy)';
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._h);
+    showToast._h = setTimeout(()=> t.classList.remove('show'), 1600);
+  }
+
+  // ---------- actions ----------
+  function addServe(rotation, seam, depth){
+    state.serves.push({id:uid(), set:entrySet, rotation, seam, depth, ts:Date.now()});
+    lastAdded = {rotation, seam, depth};
+    saveState();
+    renderAll();
+  }
+  function undoLastForRotation(rotation){
+    for(let i = state.serves.length-1; i>=0; i--){
+      const s = state.serves[i];
+      if(s.set===entrySet && s.rotation===rotation){
+        state.serves.splice(i,1);
+        saveState();
+        renderAll();
+        return;
+      }
+    }
+  }
+  function deleteServe(id){
+    state.serves = state.serves.filter(s=>s.id!==id);
+    saveState();
+    renderAll();
+  }
+  function clearAll(){
+    if(confirm('Reset all logged serves and the opponent name? This cannot be undone.')){
+      state = {opponent:'', serves:[]};
+      saveState();
+      renderAll();
+      showToast('Data reset');
+    }
+  }
+
+  // ---------- render: heat map ----------
+  function currentHeatList(){
+    if(heatmapView === 'match') return state.serves.slice();
+    const setNum = parseInt(heatmapView.replace('set',''),10);
+    return filterServes({set:setNum});
+  }
+
+  function renderViewToggle(){
+    const wrap = document.getElementById('viewToggle');
+    wrap.innerHTML = '';
+    SETS.forEach(n=>{
+      const b = document.createElement('button');
+      b.className = 'pill' + (heatmapView===('set'+n) ? ' active' : '');
+      b.textContent = 'Set ' + n;
+      b.onclick = ()=>{ heatmapView = 'set'+n; renderHeatmap(); renderViewToggle(); };
+      wrap.appendChild(b);
+    });
+    const m = document.createElement('button');
+    m.className = 'pill match-pill' + (heatmapView==='match' ? ' active' : '');
+    m.textContent = 'Match Total';
+    m.onclick = ()=>{ heatmapView = 'match'; renderHeatmap(); renderViewToggle(); };
+    wrap.appendChild(m);
+  }
+
+  function renderHeatmap(){
+    const list = currentHeatList();
+    const matrix = countMatrix(list);
+    const max = maxOf(matrix);
+    const title = heatmapView==='match' ? 'Match Total' : ('Set ' + heatmapView.replace('set',''));
+    document.getElementById('heatmapTitle').textContent = title;
+
+    const grid = document.getElementById('heatmapGrid');
+    grid.innerHTML = '';
+    DEPTHS.forEach(d=>{
+      SEAMS.forEach(sm=>{
+        const count = matrix[sm][d];
+        const cell = document.createElement('div');
+        cell.className = 'cell' + (count===max && count>0 ? ' hot' : '');
+        cell.style.background = heatColor(count, max);
+        cell.title = 'Seam ' + sm + DEPTH_LABEL[d] + ' (' + DEPTH_HINT[d] + '): ' + count + ' serve' + (count===1?'':'s');
+        const c = document.createElement('span');
+        c.className = 'count' + (count===0 ? ' zero' : '');
+        c.textContent = count;
+        const tc = textColorFor(count, max);
+        if(tc) c.style.color = tc;
+        cell.appendChild(c);
+        grid.appendChild(cell);
+      });
+    });
+
+    document.getElementById('statTotal').textContent = list.length;
+    let hotLabel = '—';
+    if(max > 0){
+      for(const d of DEPTHS){
+        for(const sm of SEAMS){
+          if(matrix[sm][d]===max){ hotLabel = 'Seam ' + sm + DEPTH_LABEL[d]; break; }
+        }
+        if(hotLabel !== '—') break;
+      }
+    }
+    document.getElementById('statHot').textContent = hotLabel;
+  }
+
+  // ---------- render: rotation entry ----------
+  function renderEntrySetSelect(){
+    const sel = document.getElementById('entrySetSelect');
+    if(!sel.dataset.built){
+      SETS.forEach(n=>{
+        const o = document.createElement('option');
+        o.value = n; o.textContent = 'Set ' + n;
+        sel.appendChild(o);
+      });
+      sel.dataset.built = '1';
+      sel.onchange = ()=>{ entrySet = parseInt(sel.value,10); renderRotationPanels(); renderLog(); };
+    }
+    sel.value = entrySet;
+  }
+
+  function renderMasterEntry(){
+    const rotRow = document.getElementById('rotationRow');
+    const seamRow = document.getElementById('seamRow');
+    const depthRow = document.getElementById('depthRow');
+
+    if(!rotRow.dataset.built){
+      ROTATIONS.forEach(r=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'rotation-btn';
+        b.textContent = 'R' + r;
+        b.onclick = ()=>{ universalSelection.rotation = r; updateMasterEntry(); };
+        rotRow.appendChild(b);
+      });
+      SEAMS.forEach(sm=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'seam-btn';
+        b.textContent = sm;
+        b.onclick = ()=>{ universalSelection.seam = sm; updateMasterEntry(); };
+        seamRow.appendChild(b);
+      });
+      DEPTHS.forEach(d=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'depth-btn';
+        b.innerHTML = '<span class="letter">'+DEPTH_LABEL[d]+'</span><span class="hint-word">'+DEPTH_HINT[d]+'</span>';
+        b.dataset.depth = d;
+        b.onclick = ()=>{ universalSelection.depth = d; updateMasterEntry(); };
+        depthRow.appendChild(b);
+      });
+      document.getElementById('universalEnter').onclick = ()=>{
+        const s = universalSelection;
+        if(!(s.rotation && s.seam && s.depth)) return;
+        addServe(s.rotation, s.seam, s.depth);
+      };
+      rotRow.dataset.built = '1';
+    }
+    updateMasterEntry();
+  }
+
+  function updateMasterEntry(){
+    const s = universalSelection;
+    document.querySelectorAll('#rotationRow .rotation-btn').forEach((b,i)=>{
+      b.classList.toggle('active', s.rotation === ROTATIONS[i]);
+    });
+    document.querySelectorAll('#seamRow .seam-btn').forEach((b,i)=>{
+      b.classList.toggle('active', s.seam === SEAMS[i]);
+    });
+    document.querySelectorAll('#depthRow .depth-btn').forEach(b=>{
+      b.classList.toggle('active', s.depth === b.dataset.depth);
+    });
+    document.getElementById('universalEnter').disabled = !(s.rotation && s.seam && s.depth);
+  }
+
+  function renderRotationPanels(){
+    document.getElementById('rotTotalsSetLabel').textContent = 'Set ' + entrySet;
+    const wrap = document.getElementById('rotationGrid');
+    wrap.innerHTML = '';
+    ROTATIONS.forEach(r=>{
+      const list = filterServes({set:entrySet, rotation:r}).slice().sort((a,b)=>b.ts-a.ts);
+
+      const card = document.createElement('div');
+      card.className = 'rotation-card';
+      card.dataset.rotation = r;
+
+      const head = document.createElement('div');
+      head.className = 'rc-head';
+      head.innerHTML = `<span class="rname">Rotation ${r}</span><span class="rtotal">${list.length} srv</span>`;
+      card.appendChild(head);
+
+      const lastEl = document.createElement('div');
+      lastEl.className = 'last-logged';
+      lastEl.style.marginTop = '0';
+      lastEl.textContent = list[0] ? `Last: Seam ${list[0].seam}${DEPTH_LABEL[list[0].depth]} (${DEPTH_HINT[list[0].depth]})` : 'No serves logged yet';
+      card.appendChild(lastEl);
+
+      const undo = document.createElement('button');
+      undo.className = 'undo-btn';
+      undo.textContent = 'Undo last';
+      undo.disabled = list.length === 0;
+      undo.onclick = ()=> undoLastForRotation(r);
+      card.appendChild(undo);
+
+      wrap.appendChild(card);
+    });
+  }
+
+  function renderLog(){
+    document.getElementById('logSetLabel').textContent = 'Set ' + entrySet;
+    const list = filterServes({set:entrySet}).slice().sort((a,b)=>b.ts-a.ts);
+    const el = document.getElementById('logList');
+    el.innerHTML = '';
+    if(list.length===0){
+      el.innerHTML = '<div class="log-empty">No serves logged for this set yet.</div>';
+      return;
+    }
+    list.forEach(s=>{
+      const row = document.createElement('div');
+      row.className = 'log-row';
+      row.innerHTML = `<span><span class="tag">R${s.rotation}</span>Seam ${s.seam}${DEPTH_LABEL[s.depth]} <span style="color:#9AA1AC;">(${DEPTH_HINT[s.depth]})</span></span>`;
+      const del = document.createElement('button');
+      del.innerHTML = '&times;';
+      del.title = 'Remove this serve';
+      del.onclick = ()=> deleteServe(s.id);
+      row.appendChild(del);
+      el.appendChild(row);
+    });
+  }
+
+  function flashLastAdded(){
+    if(!lastAdded) return;
+    const btn = document.getElementById('universalEnter');
+    if(btn){
+      const original = 'Enter';
+      btn.textContent = 'Logged ✓';
+      btn.classList.add('logged');
+      setTimeout(()=>{ btn.textContent = original; btn.classList.remove('logged'); }, 450);
+    }
+    const lastText = document.getElementById('universalLast');
+    if(lastText){
+      lastText.textContent = `Logged: R${lastAdded.rotation} · Seam ${lastAdded.seam}${DEPTH_LABEL[lastAdded.depth]} (${DEPTH_HINT[lastAdded.depth]})`;
+    }
+    lastAdded = null;
+  }
+
+  function renderAll(){
+    document.getElementById('opponentInput').value = state.opponent || '';
+    renderViewToggle();
+    renderHeatmap();
+    renderEntrySetSelect();
+    renderMasterEntry();
+    renderRotationPanels();
+    renderLog();
+    flashLastAdded();
+  }
+
+  // ---------- print / export ----------
+  function buildPrintReport(){
+    const el = document.getElementById('printReport');
+    const opp = state.opponent ? state.opponent : 'Opponent TBD';
+    const dateStr = new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+
+    const views = SETS.map(n=>({key:'set'+n,label:'Set '+n})).concat([{key:'match',label:'Match Total'}]);
+
+    let cards = '';
+    views.forEach(v=>{
+      const list = v.key==='match' ? state.serves : filterServes({set:parseInt(v.key.replace('set',''),10)});
+      const matrix = countMatrix(list);
+      const max = maxOf(matrix);
+      let mini = '';
+      DEPTHS.forEach(d=>{
+        SEAMS.forEach(sm=>{
+          const c = matrix[sm][d];
+          mini += `<div class="pr-mini-cell" style="background:${heatColor(c,max)};color:${textColorFor(c,max)||'#12203A'}">${c}</div>`;
+        });
+      });
+      cards += `<div class="pr-card"><h4>${v.label} (${list.length})</h4><div class="pr-net"></div><div class="pr-mini-grid">${mini}</div></div>`;
+    });
+
+    let tableRows = '';
+    DEPTHS.forEach(d=>{
+      SEAMS.forEach(sm=>{
+        let rowCells = '';
+        views.forEach(v=>{
+          const list = v.key==='match' ? state.serves : filterServes({set:parseInt(v.key.replace('set',''),10)});
+          const c = list.filter(s=>s.seam===sm && s.depth===d).length;
+          rowCells += `<td>${c}</td>`;
+        });
+        tableRows += `<tr><td>Seam ${sm}${DEPTH_LABEL[d]} (${DEPTH_HINT[d]})</td>${rowCells}</tr>`;
+      });
+    });
+    const headerCells = views.map(v=>`<th>${v.label}</th>`).join('');
+
+    el.innerHTML = `
+      <p class="pr-title">Serve Tracking Report</p>
+      <p class="pr-sub">SLU Volleyball vs ${opp} — generated ${dateStr}</p>
+      <div class="pr-grid">${cards}</div>
+      <table class="pr-table">
+        <thead><tr><th>Zone</th>${headerCells}</tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    `;
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    buildPrintReport();
+    setTimeout(()=> window.print(), 50);
+  });
+
+  document.getElementById('opponentInput').addEventListener('input', (e)=>{
+    state.opponent = e.target.value;
+    saveState();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+  loadState();
+})();
+</script>
+</body>
+</html>
