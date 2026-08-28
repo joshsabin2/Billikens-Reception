@@ -170,8 +170,9 @@
     aspect-ratio:1/.82;border-radius:6px;display:flex;align-items:center;justify-content:center;
     position:relative;border:1px solid rgba(0,36,77,.12);transition:transform .1s ease;
   }
-  .cell .count{font-family:'Anton',sans-serif;font-size:22px;color:var(--navy);}
+  .cell .count{font-family:'Anton',sans-serif;font-size:22px;color:var(--navy);display:flex;flex-direction:column;align-items:center;line-height:.9;}
   .cell .count.zero{color:var(--muted-faint);font-size:16px;}
+  .serve-percent{font-family:'Barlow Semi Condensed',sans-serif;font-size:10px;font-weight:700;line-height:1.1;}
   .cell.hot{outline:2.5px solid var(--gold);outline-offset:-2.5px;}
   .cell.hot::after{content:"★";position:absolute;top:3px;right:5px;font-size:10px;color:var(--gold);}
   .legend{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:12px;color:var(--muted);}
@@ -280,9 +281,9 @@
   .map-card p{font-size:9px;color:var(--muted);margin:0 0 5px;line-height:1.1;}
   .map-court{position:relative;border:2px solid var(--navy);border-top-width:6px;border-radius:2px 2px 4px 4px;background:var(--court-floor);padding:3px;}
   .map-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
-  .map-cell{aspect-ratio:1/.78;border:1px solid rgba(0,36,77,.12);border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;color:var(--navy);}
+  .map-cell{aspect-ratio:1/.78;border:1px solid rgba(0,36,77,.12);border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;line-height:.9;color:var(--navy);}
   .map-overlay{position:absolute;inset:6px;pointer-events:none;z-index:2;}
-  .map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:17px;height:17px;padding:0 3px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:white;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:7px;}
+  .map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:21px;height:21px;padding:0 4px;border-radius:50%;background:var(--navy);border:1.5px solid var(--gold);color:white;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:8px;}
   @media (max-width:720px){.map-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}}
   .map-passer.p1{left:76.25%;}.map-passer.p2{left:50%;}.map-passer.p3{left:23.75%;}
   .maps-empty{color:var(--muted);font-size:14px;padding:10px 0;}
@@ -324,7 +325,8 @@
   .pr-map p{font-size:10px;color:#555;text-align:center;margin:0 0 6px;}
   .pr-map-court{position:relative;border:2px solid var(--navy);border-top-width:7px;border-radius:2px 2px 5px 5px;background:#F6F3EC;padding:4px;}
   .pr-map-cells{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;}
-  .pr-map-cell{aspect-ratio:1/.82;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--navy);}
+  .pr-map-cell{aspect-ratio:1/.82;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;line-height:.9;color:var(--navy);}
+  .pr-map-cell .serve-percent{font-size:7px;}
   .pr-map-overlay{position:absolute;inset:4px;pointer-events:none;z-index:2;}
   .pr-map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:18px;height:18px;padding:0 3px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:7px;}
   .pr-map-passer.p1{left:76.25%;}.pr-map-passer.p2{left:50%;}.pr-map-passer.p3{left:23.75%;}
@@ -593,6 +595,12 @@
     SEAMS.forEach(sm=> DEPTHS.forEach(d=> { if(matrix[sm][d] > mx) mx = matrix[sm][d]; }));
     return mx;
   }
+  function servePercent(count, total){
+    return total ? Math.round((count / total) * 100) + '%' : '0%';
+  }
+  function serveCellMarkup(count, total){
+    return `<span>${count}</span><span class="serve-percent">${servePercent(count,total)}</span>`;
+  }
   function hexLerp(c1, c2, t){
     const a = parseInt(c1.slice(1),16), b = parseInt(c2.slice(1),16);
     const ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
@@ -803,7 +811,7 @@
     DEPTHS.forEach(d=> SEAMS_HEAT_ORDER.forEach(sm=>{
       const count = matrix[sm][d];
       const fg = count && count/max > .55 ? '#fff' : '#00244D';
-      cells += `<div class="${prefix}${print ? '-cell' : '-cell'}" style="background:${heatColorFixed(count,max)};color:${fg}">${count}</div>`;
+      cells += `<div class="${prefix}${print ? '-cell' : '-cell'}" style="background:${heatColorFixed(count,max)};color:${fg}">${serveCellMarkup(count,list.length)}</div>`;
     }));
     const overlayClass = print ? 'pr-map-passer' : 'map-passer';
     const courtClass = print ? 'pr-map-court' : 'map-court';
@@ -854,10 +862,10 @@
         const cell = document.createElement('div');
         cell.className = 'cell' + (count===max && count>0 ? ' hot' : '');
         cell.style.background = heatColor(count, max);
-        cell.title = 'Seam ' + sm + DEPTH_LABEL[d] + ' (' + DEPTH_HINT[d] + '): ' + count + ' serve' + (count===1?'':'s');
+        cell.title = 'Seam ' + sm + DEPTH_LABEL[d] + ' (' + DEPTH_HINT[d] + '): ' + servePercent(count,list.length) + ' (' + count + ' serve' + (count===1?'':'s') + ')';
         const c = document.createElement('span');
         c.className = 'count' + (count===0 ? ' zero' : '');
-        c.textContent = count;
+        c.innerHTML = serveCellMarkup(count,list.length);
         const tc = textColorFor(count, max);
         if(tc) c.style.color = tc;
         cell.appendChild(c);
