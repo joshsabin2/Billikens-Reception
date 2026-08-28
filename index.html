@@ -125,6 +125,9 @@
   .heat-filters .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
   .heat-filters label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;}
   .heat-filters select{width:100%;}
+  .heatmap-mode-toggle{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--paper);margin:-6px 0 10px;width:max-content;}
+  .heatmap-mode-btn{border:none;border-radius:999px;background:transparent;color:var(--muted);padding:6px 11px;font:700 11px 'Barlow Semi Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;}
+  .heatmap-mode-btn.active{background:var(--navy);color:var(--white);}
 
   .court-wrap{display:flex;gap:10px;}
   .depth-labels{display:flex;flex-direction:column;justify-content:space-around;padding:38px 0 10px;}
@@ -407,6 +410,10 @@
               <select id="heatmapViewSelect"></select>
             </div>
           </div>
+          <div class="heatmap-mode-toggle" aria-label="Heat map rotation view">
+            <button class="heatmap-mode-btn active" id="heatmapSelectedBtn" type="button">Selected rotation</button>
+            <button class="heatmap-mode-btn" id="heatmapAllBtn" type="button">All rotations</button>
+          </div>
           <div class="heat-pattern-note" id="heatPatternNote">Select a rotation to display its reception pattern.</div>
 
           <div class="court-wrap">
@@ -480,7 +487,7 @@
   let state = { opponent:'', serves:[], roster:[], patterns:{} };
   let entrySet = 1;
   let heatmapView = 'match'; // 'set1'..'set5' or 'match'
-  let heatmapRotationFilter = 'all'; // 'all' or a rotation number
+  let heatmapMode = 'selected'; // selected entry rotation or all rotations
   let lastAdded = null;
   const universalSelection = {rotation:null, seam:null, depth:null};
 
@@ -670,7 +677,7 @@
       state = {opponent:'', serves:[], roster:keepRoster, patterns:{}};
       entrySet = 1;
       heatmapView = 'match';
-      heatmapRotationFilter = 'all';
+      heatmapMode = 'selected';
       universalSelection.rotation = null;
       universalSelection.seam = null;
       universalSelection.depth = null;
@@ -703,8 +710,8 @@
     let base;
     if(heatmapView === 'match') base = state.serves.slice();
     else base = filterServes({set: parseInt(heatmapView.replace('set',''),10)});
-    if(heatmapRotationFilter !== 'all'){
-      base = base.filter(s=> s.rotation === parseInt(heatmapRotationFilter,10));
+    if(heatmapMode === 'selected' && universalSelection.rotation){
+      base = base.filter(s=> s.rotation === universalSelection.rotation);
     }
     return base;
   }
@@ -722,6 +729,16 @@
       viewSel.onchange = ()=>{ heatmapView = viewSel.value; renderHeatmap(); };
     }
     viewSel.value = heatmapView;
+
+    const selectedBtn = document.getElementById('heatmapSelectedBtn');
+    const allBtn = document.getElementById('heatmapAllBtn');
+    selectedBtn.classList.toggle('active', heatmapMode === 'selected');
+    allBtn.classList.toggle('active', heatmapMode === 'all');
+    if(!selectedBtn.dataset.built){
+      selectedBtn.onclick = ()=>{ heatmapMode = 'selected'; renderHeatFilters(); renderHeatmap(); };
+      allBtn.onclick = ()=>{ heatmapMode = 'all'; renderHeatFilters(); renderHeatmap(); };
+      selectedBtn.dataset.built = '1';
+    }
 
   }
 
@@ -749,6 +766,11 @@
     const overlay = document.getElementById('heatPatternOverlay');
     const note = document.getElementById('heatPatternNote');
     if(!overlay) return;
+    if(heatmapMode === 'all'){
+      overlay.innerHTML = '';
+      if(note) note.textContent = 'All rotations are combined; no single reception pattern is overlaid.';
+      return;
+    }
     const rotation = universalSelection.rotation;
     if(!rotation){
       overlay.innerHTML = '';
@@ -799,7 +821,7 @@
     const matrix = countMatrix(list);
     const max = maxOf(matrix);
     const setLabel = heatmapView==='match' ? 'Match Total' : ('Set ' + heatmapView.replace('set',''));
-    const rotLabel = heatmapRotationFilter==='all' ? '' : (' · Rotation ' + heatmapRotationFilter);
+    const rotLabel = heatmapMode === 'all' ? ' · All Rotations' : (universalSelection.rotation ? (' · Rotation ' + universalSelection.rotation) : ' · Select a Rotation');
     document.getElementById('heatmapTitle').textContent = setLabel + rotLabel;
 
     const grid = document.getElementById('heatmapGrid');
@@ -859,7 +881,7 @@
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'rotation-btn';
         b.textContent = 'R' + r;
-        b.onclick = ()=>{ universalSelection.rotation = r; heatmapRotationFilter = r; updateMasterEntry(); renderPattern(); renderHeatmap(); };
+        b.onclick = ()=>{ universalSelection.rotation = r; updateMasterEntry(); renderPattern(); renderHeatFilters(); renderHeatmap(); };
         rotRow.appendChild(b);
       });
       SEAMS.forEach(sm=>{
