@@ -25,19 +25,6 @@
     --danger:#B04A4A;
     --radius:10px;
   }
-  body[data-theme="dark"]{
-    --ink:#EDF0F5;
-    --paper:#0B1220;
-    --white:#141C2C;
-    --line:#2E3A52;
-    --heat-0:#1C2740;
-    --court-floor:#101828;
-    --gray:#3A465E;
-    --bronze:#E0B77D;
-    --muted:#A7B2C8;
-    --muted-faint:#5F6C87;
-    --danger:#E88686;
-  }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -122,11 +109,9 @@
     box-shadow:0 1px 3px rgba(0,36,77,.08), 0 8px 24px rgba(0,36,77,.06);
     padding:22px;
   }
-  body[data-theme="dark"] .panel{box-shadow:0 1px 3px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);}
   .panel + .panel{margin-top:22px;}
   .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
   .panel-title h2{font-size:20px;color:var(--navy);margin:0;}
-  body[data-theme="dark"] .panel-title h2{color:var(--gold);}
   .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);font-weight:700;margin:0 0 4px;}
 
   select{
@@ -150,7 +135,6 @@
   .court{flex:1;}
   .seam-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;}
   .seam-labels div{text-align:center;font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.06em;}
-  body[data-theme="dark"] .seam-labels div{color:var(--gold);}
 
   .net-wrap{position:relative;padding:0 3px;margin-bottom:2px;}
   .net{
@@ -178,10 +162,6 @@
     padding:7px;
   }
   .attack-line{position:absolute;left:7px;right:7px;top:calc(33.333% - 1px);border-top:2px dashed rgba(0,36,77,.4);pointer-events:none;}
-  .attack-line .lbl{
-    position:absolute;right:2px;top:-8px;font-size:8.5px;font-weight:700;letter-spacing:.04em;
-    color:var(--bronze);background:var(--court-floor);padding:0 4px;text-transform:uppercase;
-  }
   .grid4x3{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;position:relative;}
   .cell{
     aspect-ratio:1/.82;border-radius:6px;display:flex;align-items:center;justify-content:center;
@@ -196,14 +176,12 @@
   .stat-row{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;}
   .stat{background:var(--paper);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;}
   .stat .n{font-family:'Anton',sans-serif;font-size:26px;color:var(--blue);line-height:1;}
-  body[data-theme="dark"] .stat .n{color:var(--gold);}
   .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:4px;}
 
   /* ---------- entry panel ---------- */
   .entry-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
   .set-select-wrap{display:flex;align-items:center;gap:10px;}
   .set-select-wrap label{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;}
-  body[data-theme="dark"] .set-select-wrap label{color:var(--gold);}
   .hint{font-size:12.5px;color:var(--muted);margin:6px 0 18px;}
 
   .master-entry{
@@ -232,7 +210,6 @@
   }
   .submit-btn:active{transform:scale(.97);}
   .submit-btn:disabled{background:#E7E9EA;color:#AEB4BC;cursor:not-allowed;}
-  body[data-theme="dark"] .submit-btn:disabled{background:#232D42;color:#5F6B85;}
   .submit-btn.logged{background:#2E9E5B;color:var(--white);}
   .last-logged{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;text-align:center;}
   .undo-row{display:flex;justify-content:center;margin-top:6px;}
@@ -248,9 +225,9 @@
   .pattern-track{position:relative;height:64px;margin:8px 10px 4px;}
   .pattern-seamline{position:absolute;top:50%;left:0;right:0;border-top:2px dashed rgba(0,36,77,.3);}
   .passer-wrap{position:absolute;top:50%;width:52px;height:52px;transform:translate(-50%,-50%);}
-  .passer-wrap:nth-child(2){left:25%;}
+  .passer-wrap[data-slot="p1"]{left:75%;}
   .passer-wrap:nth-child(3){left:50%;}
-  .passer-wrap:nth-child(4){left:75%;}
+  .passer-wrap[data-slot="p3"]{left:25%;}
   .passer-circle{
     width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--white);
     display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:16px;
@@ -260,7 +237,7 @@
   .passer-select{
     position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;
   }
-  .pattern-seam-tags{display:grid;grid-template-columns:repeat(4,1fr);margin-top:2px;}
+  .pattern-seam-tags{display:grid;grid-template-columns:repeat(3,1fr);margin-top:2px;}
   .pattern-seam-tags div{text-align:center;font-size:10px;color:var(--bronze);font-weight:700;letter-spacing:.06em;}
   .pattern-empty-msg{font-size:13px;color:var(--muted);text-align:center;padding:10px 0;}
 
@@ -271,7 +248,6 @@
   .rotation-card{border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--paper);}
   .rotation-card .rc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
   .rotation-card .rc-head .rname{font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);}
-  body[data-theme="dark"] .rotation-card .rc-head .rname{color:var(--gold);}
   .rotation-card .rc-head .rtotal{font-size:12px;color:var(--bronze);font-weight:700;}
   .undo-btn{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;padding:6px 0 0;}
   .undo-btn:hover{color:var(--blue);}
@@ -287,13 +263,24 @@
   .roster-row .del-btn{margin-left:auto;background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;}
   .add-player-btn{margin-top:14px;}
 
-  /* ---------- log tab ---------- */
-  .log-list{display:flex;flex-direction:column;gap:6px;}
-  .log-empty{color:var(--muted);font-size:14px;padding:10px 0;}
-  .log-row{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-radius:8px;padding:8px 12px;font-size:13.5px;}
-  .log-row .tag{display:inline-block;background:var(--blue);color:var(--white);font-weight:700;font-size:11px;border-radius:4px;padding:2px 6px;margin-right:8px;}
-  .log-row button{background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;}
-  .log-row button:hover{filter:brightness(0.85);}
+  /* ---------- reception-pattern map overlay ---------- */
+  .heat-pattern-overlay{position:absolute;inset:7px;pointer-events:none;z-index:3;}
+  .heat-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:var(--navy);color:var(--white);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .heat-passer.p1{left:75%;}.heat-passer.p2{left:50%;}.heat-passer.p3{left:25%;}
+  .heat-pattern-note{font-size:11px;color:var(--muted);margin:-6px 0 10px;min-height:14px;}
+  .map-gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;}
+  .map-card{border:1px solid var(--line);border-radius:8px;padding:7px;background:var(--paper);min-width:0;}
+  .map-card h3{font-size:12px;color:var(--navy);margin:0;white-space:nowrap;}
+  .map-card p{font-size:9px;color:var(--muted);margin:0 0 5px;line-height:1.1;}
+  .map-court{position:relative;border:2px solid var(--navy);border-top-width:6px;border-radius:2px 2px 4px 4px;background:var(--court-floor);padding:3px;}
+  .map-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+  .map-cell{aspect-ratio:1/.78;border:1px solid rgba(0,36,77,.12);border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;color:var(--navy);}
+  .map-overlay{position:absolute;inset:6px;pointer-events:none;z-index:2;}
+  .map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:17px;height:17px;padding:0 3px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:white;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:7px;}
+  @media (max-width:1100px){.map-gallery{grid-template-columns:repeat(3,minmax(0,1fr));}}
+  @media (max-width:620px){.map-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .map-passer.p1{left:75%;}.map-passer.p2{left:50%;}.map-passer.p3{left:25%;}
+  .maps-empty{color:var(--muted);font-size:14px;padding:10px 0;}
 
   .toast{
     position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);
@@ -315,6 +302,8 @@
     .screen-only{display:none !important;}
     #printReport{display:block !important;padding:20px;}
     body{background:#fff;color:#12203A;}
+    *, *::before, *::after{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+    .pr-map-cell{background-clip:padding-box !important;}
   }
   .pr-title{font-family:'Anton',sans-serif;font-size:26px;color:var(--navy);margin:0 0 2px;}
   .pr-sub{font-size:14px;color:#555;margin:0 0 20px;}
@@ -324,6 +313,16 @@
   .pr-net{height:6px;background:var(--gray);border:1px solid var(--navy);border-radius:2px;margin-bottom:4px;}
   .pr-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
   .pr-mini-cell{aspect-ratio:1/.85;border:1px solid var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);}
+  .pr-map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .pr-map{border:1px solid var(--line);border-radius:8px;padding:9px;break-inside:avoid;}
+  .pr-map h4{font-family:'Anton',sans-serif;font-size:13px;color:var(--navy);margin:0 0 2px;text-align:center;letter-spacing:.05em;}
+  .pr-map p{font-size:10px;color:#555;text-align:center;margin:0 0 6px;}
+  .pr-map-court{position:relative;border:2px solid var(--navy);border-top-width:7px;border-radius:2px 2px 5px 5px;background:#F6F3EC;padding:4px;}
+  .pr-map-cells{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;}
+  .pr-map-cell{aspect-ratio:1/.82;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--navy);}
+  .pr-map-overlay{position:absolute;inset:4px;pointer-events:none;z-index:2;}
+  .pr-map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:18px;height:18px;padding:0 3px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:7px;}
+  .pr-map-passer.p1{left:75%;}.pr-map-passer.p2{left:50%;}.pr-map-passer.p3{left:25%;}
   table.pr-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;}
   table.pr-table th, table.pr-table td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
   table.pr-table th{background:var(--navy);color:#fff;font-weight:600;}
@@ -343,7 +342,6 @@
         <span>vs</span>
         <input id="opponentInput" type="text" placeholder="Opponent name" />
       </div>
-      <button class="btn-icon" id="darkToggle" type="button" title="Toggle dark mode">🌙</button>
       <button class="btn btn-ghost" id="clearBtn" type="button">New Match</button>
       <button class="btn btn-gold" id="exportBtn" type="button">Export PDF</button>
     </div>
@@ -351,8 +349,8 @@
 
   <nav class="tabnav">
     <button class="tab-btn active" data-tab="track" type="button">Track</button>
-    <button class="tab-btn" data-tab="lineup" type="button">Lineup &amp; Subs</button>
-    <button class="tab-btn" data-tab="log" type="button">Serve Log</button>
+    <button class="tab-btn" data-tab="lineup" type="button">Players</button>
+    <button class="tab-btn" data-tab="maps" type="button">Reception Heat Maps</button>
   </nav>
 
   <main>
@@ -408,11 +406,8 @@
               <label for="heatmapViewSelect">Set / Match</label>
               <select id="heatmapViewSelect"></select>
             </div>
-            <div class="field">
-              <label for="heatmapRotationSelect">Rotation</label>
-              <select id="heatmapRotationSelect"></select>
-            </div>
           </div>
+          <div class="heat-pattern-note" id="heatPatternNote">Select a rotation to display its reception pattern.</div>
 
           <div class="court-wrap">
             <div class="depth-labels"><div>A · Short</div><div>B · Medium</div><div>C · Deep</div></div>
@@ -420,8 +415,9 @@
               <div class="seam-labels" id="heatSeamLabels"></div>
               <div class="net-wrap"><div class="net"></div></div>
               <div class="court-surface">
-                <div class="attack-line"><span class="lbl">Attack line</span></div>
+                <div class="attack-line"></div>
                 <div class="grid4x3" id="heatmapGrid"></div>
+                <div class="heat-pattern-overlay" id="heatPatternOverlay"></div>
               </div>
             </div>
           </div>
@@ -440,15 +436,15 @@
     <div class="tab-panel" id="tab-lineup">
       <section class="panel">
         <p class="eyebrow">Roster</p>
-        <h2 style="margin:0 0 6px;color:var(--navy);font-size:20px;">Lineup &amp; Subs</h2>
-        <p class="hint" style="margin-top:0;">Add every player who might see the court — starters, libero, and subs. Use initials or jersey numbers. These names populate the reception-pattern dropdowns on the Track tab; swapping a name into a spot there is how you record a substitution for that rotation.</p>
+        <h2 style="margin:0 0 6px;color:var(--navy);font-size:20px;">Players</h2>
+        <p class="hint" style="margin-top:0;">Add players using initials or jersey numbers. These names populate the reception-pattern dropdowns on the Track tab.</p>
         <div id="rosterList"></div>
         <button class="btn btn-gold add-player-btn" id="addPlayerBtn" type="button">+ Add Player</button>
       </section>
     </div>
 
-    <!-- LOG TAB -->
-    <div class="tab-panel" id="tab-log">
+    <!-- RECEPTION HEAT MAPS TAB -->
+    <div class="tab-panel" id="tab-maps">
       <section class="panel">
         <div class="panel-title">
           <h2>Serve Log — <span id="logSetLabel2">Set 1</span></h2>
@@ -470,7 +466,7 @@
 
 <script>
 (function(){
-  const SEAMS = [1,2,3,4];
+  const SEAMS = [4,3,2,1];
   const SEAMS_HEAT_ORDER = [4,3,2,1];
   const DEPTHS = ['a','b','c'];
   const DEPTH_LABEL = {a:'A', b:'B', c:'C'};
@@ -487,17 +483,15 @@
   let heatmapRotationFilter = 'all'; // 'all' or a rotation number
   let lastAdded = null;
   const universalSelection = {rotation:null, seam:null, depth:null};
-  let darkMode = false;
 
   function defaultRoster(){
     return [
-      {id:'p1', label:'1', isLibero:false},
-      {id:'p2', label:'2', isLibero:false},
-      {id:'p3', label:'3', isLibero:false},
-      {id:'p4', label:'4', isLibero:false},
-      {id:'p5', label:'5', isLibero:false},
-      {id:'p6', label:'6', isLibero:false},
-      {id:'lib', label:'L', isLibero:true}
+      {id:'p1', label:'1'},
+      {id:'p2', label:'2'},
+      {id:'p3', label:'3'},
+      {id:'p4', label:'4'},
+      {id:'p5', label:'5'},
+      {id:'p6', label:'6'}
     ];
   }
 
@@ -536,8 +530,6 @@
         const parsed = JSON.parse(raw);
         if(parsed && Array.isArray(parsed.serves)){ state = parsed; loaded = true; }
       }
-      const dm = localStorage.getItem(STORAGE_KEY + '-dark');
-      if(dm !== null) darkMode = dm === '1';
     }catch(e){ console.error('Local storage read failed', e); }
 
     if(!loaded && hasClaudeStorage()){
@@ -554,7 +546,6 @@
     if(!state.patterns) state.patterns = {};
     ensurePatternStructure(entrySet);
 
-    applyTheme();
     renderAll();
   }
   async function saveState(){
@@ -569,10 +560,6 @@
       catch(e){ /* secondary mirror only, ok to ignore */ }
     }
   }
-  function saveDarkPref(){
-    try{ localStorage.setItem(STORAGE_KEY + '-dark', darkMode ? '1' : '0'); }catch(e){}
-  }
-
   // ---------- helpers ----------
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -602,24 +589,24 @@
     const r = Math.round(ar+(br-ar)*t), g = Math.round(ag+(bg-ag)*t), bl = Math.round(ab+(bb-ab)*t);
     return `rgb(${r},${g},${bl})`;
   }
-  function heatColorFixed(count, max, dark){
-    if(count===0) return dark ? '#1C2740' : '#E8EDF5';
+  function heatColorFixed(count, max){
+    if(count===0) return '#E8EDF5';
     const t = max>0 ? count/max : 0;
-    const lo = dark ? '#1C2740' : '#E8EDF5';
-    const hi = dark ? '#3D7BFF' : '#003DA5';
+    const lo = '#E8EDF5';
+    const hi = '#003DA5';
     return hexLerp(lo, hi, Math.min(1, 0.28 + t*0.72));
   }
-  function heatColor(count, max){ return heatColorFixed(count, max, darkMode); }
+  function heatColor(count, max){ return heatColorFixed(count, max); }
   function textColorFor(count, max){
     // on-screen: null for zero-count lets the CSS ".count.zero" muted style show through
-    if(count===0) return darkMode ? '#5B6A88' : null;
+    if(count===0) return null;
     const t = max>0 ? count/max : 0;
-    return t > 0.55 ? '#FFFFFF' : (darkMode ? '#EDF0F5' : 'var(--navy)');
+    return t > 0.55 ? '#FFFFFF' : 'var(--navy)';
   }
   function playerLabel(id){
     if(!id) return null;
     const p = state.roster.find(x=>x.id===id);
-    return p ? p.label + (p.isLibero ? ' (L)' : '') : null;
+    return p ? p.label : null;
   }
   function playerShort(id){
     if(!id) return '';
@@ -635,18 +622,6 @@
     showToast._h = setTimeout(()=> t.classList.remove('show'), 2000);
   }
 
-  // ---------- theme ----------
-  function applyTheme(){
-    document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-    document.getElementById('darkToggle').textContent = darkMode ? '☀️' : '🌙';
-  }
-  document.getElementById('darkToggle').addEventListener('click', ()=>{
-    darkMode = !darkMode;
-    applyTheme();
-    saveDarkPref();
-    renderHeatmap();
-  });
-
   // ---------- tabs ----------
   document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
@@ -658,7 +633,10 @@
 
   // ---------- actions ----------
   function addServe(rotation, seam, depth){
-    state.serves.push({id:uid(), set:entrySet, rotation, seam, depth, ts:Date.now()});
+    const pattern = patternFor(entrySet, rotation);
+    const patternSnapshot = {};
+    PASSER_SLOTS.forEach(slot=> patternSnapshot[slot] = pattern[slot] || null);
+    state.serves.push({id:uid(), set:entrySet, rotation, seam, depth, pattern:patternSnapshot, ts:Date.now()});
     lastAdded = {rotation, seam, depth};
     saveState();
     renderAll();
@@ -696,10 +674,6 @@
       universalSelection.rotation = null;
       universalSelection.seam = null;
       universalSelection.depth = null;
-      lastAdded = null;
-      if(document.activeElement && typeof document.activeElement.blur === 'function'){
-        document.activeElement.blur();
-      }
       ensurePatternStructure(entrySet);
       saveState();
       renderAll();
@@ -717,10 +691,7 @@
     entrySet = newSet;
     if(!hasOwnData){
       const copied = copyForwardPatterns(newSet);
-      const subbing = confirm('Starting Set ' + newSet + '. Are you making substitutions to the lineup?');
-      if(subbing){
-        showToast('Update player assignments below or in the Lineup tab');
-      } else if(copied){
+      if(copied){
         showToast('Reception pattern carried over from the previous set');
       }
     }
@@ -752,18 +723,6 @@
     }
     viewSel.value = heatmapView;
 
-    const rotSel = document.getElementById('heatmapRotationSelect');
-    if(!rotSel.dataset.built){
-      const allOpt = document.createElement('option'); allOpt.value = 'all'; allOpt.textContent = 'All Rotations';
-      rotSel.appendChild(allOpt);
-      ROTATIONS.forEach(r=>{
-        const o = document.createElement('option'); o.value = r; o.textContent = 'Rotation ' + r;
-        rotSel.appendChild(o);
-      });
-      rotSel.dataset.built = '1';
-      rotSel.onchange = ()=>{ heatmapRotationFilter = rotSel.value; renderHeatmap(); };
-    }
-    rotSel.value = heatmapRotationFilter;
   }
 
   function renderHeatSeamLabels(){
@@ -774,6 +733,65 @@
       d.textContent = 'Seam ' + sm;
       wrap.appendChild(d);
     });
+  }
+
+  function patternFor(set, rotation){
+    const setPatterns = state.patterns && state.patterns[set];
+    return (setPatterns && setPatterns[rotation]) || {p1:null,p2:null,p3:null};
+  }
+  function patternOverlayMarkup(pattern, className){
+    return PASSER_SLOTS.map(slot=>{
+      const label = playerShort(pattern[slot]);
+      return label ? `<div class="${className} ${slot}">${label}</div>` : '';
+    }).join('');
+  }
+  function renderHeatPatternOverlay(){
+    const overlay = document.getElementById('heatPatternOverlay');
+    const note = document.getElementById('heatPatternNote');
+    if(!overlay) return;
+    const rotation = universalSelection.rotation;
+    if(!rotation){
+      overlay.innerHTML = '';
+      if(note) note.textContent = 'Select a rotation to display its reception pattern.';
+      return;
+    }
+    overlay.innerHTML = patternOverlayMarkup(patternFor(entrySet, rotation), 'heat-passer');
+    if(note) note.textContent = `Reception pattern: Set ${entrySet}, Rotation ${rotation}`;
+  }
+  function receptionGroups(){
+    const groups = new Map();
+    state.serves.forEach(serve=>{
+      const pattern = serve.pattern || patternFor(serve.set, serve.rotation);
+      const key = [serve.rotation].concat(PASSER_SLOTS.map(slot=>pattern[slot] || '')).join('|');
+      if(!groups.has(key)) groups.set(key, {rotation:serve.rotation, pattern, serves:[], sets:new Set()});
+      const group = groups.get(key);
+      group.serves.push(serve);
+      group.sets.add(serve.set);
+    });
+    return Array.from(groups.values()).sort((a,b)=>a.rotation-b.rotation || Math.min(...a.sets)-Math.min(...b.sets));
+  }
+  function heatMapCardMarkup(rotation, pattern, list, sets, print){
+    const matrix = countMatrix(list), max = maxOf(matrix);
+    const prefix = print ? 'pr-map' : 'map';
+    let cells = '';
+    DEPTHS.forEach(d=> SEAMS_HEAT_ORDER.forEach(sm=>{
+      const count = matrix[sm][d];
+      const fg = count && count/max > .55 ? '#fff' : '#00244D';
+      cells += `<div class="${prefix}${print ? '-cell' : '-cell'}" style="background:${heatColorFixed(count,max)};color:${fg}">${count}</div>`;
+    }));
+    const overlayClass = print ? 'pr-map-passer' : 'map-passer';
+    const courtClass = print ? 'pr-map-court' : 'map-court';
+    const gridClass = print ? 'pr-map-cells' : 'map-grid';
+    const setLabel = Array.from(sets).sort((a,b)=>a-b).map(set=>'Set '+set).join(', ');
+    return `<div class="${prefix}"><h4>Rotation ${rotation}</h4><p>${setLabel} · ${list.length} serve${list.length===1?'':'s'}</p><div class="${courtClass}"><div class="${gridClass}">${cells}</div><div class="${print ? 'pr-map-overlay' : 'map-overlay'}">${patternOverlayMarkup(pattern, overlayClass)}</div></div></div>`;
+  }
+  function renderPatternMaps(){
+    const section = document.querySelector('#tab-maps section');
+    if(!section) return;
+    section.innerHTML = '<div class="panel-title"><h2>Reception Heat Maps</h2></div><p class="hint" style="margin-top:0;">Each map represents one unique reception pattern within a rotation.</p><div class="map-gallery" id="patternMapGallery"></div>';
+    const gallery = document.getElementById('patternMapGallery');
+    const groups = receptionGroups();
+    gallery.innerHTML = groups.length ? groups.map(g=>heatMapCardMarkup(g.rotation,g.pattern,g.serves,g.sets,false)).join('') : '<p class="maps-empty">No serves have been logged yet.</p>';
   }
 
   function renderHeatmap(){
@@ -814,6 +832,7 @@
       }
     }
     document.getElementById('statHot').textContent = hotLabel;
+    renderHeatPatternOverlay();
   }
 
   // ---------- render: master entry ----------
@@ -840,7 +859,7 @@
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'rotation-btn';
         b.textContent = 'R' + r;
-        b.onclick = ()=>{ universalSelection.rotation = r; updateMasterEntry(); renderPattern(); };
+        b.onclick = ()=>{ universalSelection.rotation = r; heatmapRotationFilter = r; updateMasterEntry(); renderPattern(); renderHeatmap(); };
         rotRow.appendChild(b);
       });
       SEAMS.forEach(sm=>{
@@ -908,7 +927,7 @@
         <div class="passer-wrap" data-slot="p2"></div>
         <div class="passer-wrap" data-slot="p3"></div>
       </div>
-      <div class="pattern-seam-tags"><div>1</div><div>2</div><div>3</div><div>4</div></div>
+      <div class="pattern-seam-tags"><div>4–3</div><div>3–2</div><div>2–1</div></div>
     `;
 
     PASSER_SLOTS.forEach(slot=>{
@@ -928,7 +947,7 @@
       select.appendChild(noneOpt);
       state.roster.forEach(p=>{
         const o = document.createElement('option');
-        o.value = p.id; o.textContent = p.label + (p.isLibero ? ' (Libero)' : '');
+        o.value = p.id; o.textContent = p.label;
         if(p.id === playerId) o.selected = true;
         select.appendChild(o);
       });
@@ -988,13 +1007,6 @@
       input.placeholder = 'Initials or #';
       input.oninput = ()=>{ p.label = input.value; saveState(); renderPattern(); };
 
-      const lbl = document.createElement('label');
-      const cb = document.createElement('input');
-      cb.type = 'checkbox'; cb.checked = !!p.isLibero;
-      cb.onchange = ()=>{ p.isLibero = cb.checked; saveState(); };
-      lbl.appendChild(cb);
-      lbl.appendChild(document.createTextNode('Libero'));
-
       const del = document.createElement('button');
       del.className = 'del-btn'; del.innerHTML = '&times;'; del.title = 'Remove player';
       del.onclick = ()=>{
@@ -1005,13 +1017,12 @@
       };
 
       row.appendChild(input);
-      row.appendChild(lbl);
       row.appendChild(del);
       wrap.appendChild(row);
     });
   }
   document.getElementById('addPlayerBtn').addEventListener('click', ()=>{
-    state.roster.push({id:uid(), label:'', isLibero:false});
+    state.roster.push({id:uid(), label:''});
     saveState();
     renderRoster();
   });
@@ -1075,7 +1086,7 @@
     renderPattern();
     renderRotationPanels();
     renderRoster();
-    renderLogTab();
+    renderPatternMaps();
     flashLastAdded();
   }
 
@@ -1084,11 +1095,14 @@
     const el = document.getElementById('printReport');
     const opp = state.opponent ? state.opponent : 'Opponent TBD';
     const dateStr = new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
-    const views = SETS.map(n=>({key:'set'+n,label:'Set '+n})).concat([{key:'match',label:'Match Total'}]);
+    const views = receptionGroups().map(group=>({
+      ...group,
+      label:'Rotation '+group.rotation+' / '+Array.from(group.sets).sort((a,b)=>a-b).map(set=>'Set '+set).join(', ')
+    }));
 
     let cards = '';
     views.forEach(v=>{
-      const list = v.key==='match' ? state.serves : filterServes({set:parseInt(v.key.replace('set',''),10)});
+      const list = v.serves;
       const matrix = countMatrix(list);
       const max = maxOf(matrix);
       let mini = '';
@@ -1100,7 +1114,7 @@
           mini += `<div class="pr-mini-cell" style="background:${bg};color:${fg}">${c}</div>`;
         });
       });
-      cards += `<div class="pr-card"><h4>${v.label} (${list.length})</h4><div class="pr-net"></div><div class="pr-mini-grid">${mini}</div></div>`;
+      cards += heatMapCardMarkup(v.rotation, v.pattern, list, v.sets, true);
     });
 
     let tableRows = '';
@@ -1108,7 +1122,7 @@
       SEAMS_HEAT_ORDER.forEach(sm=>{
         let rowCells = '';
         views.forEach(v=>{
-          const list = v.key==='match' ? state.serves : filterServes({set:parseInt(v.key.replace('set',''),10)});
+          const list = v.serves;
           const c = list.filter(s=>s.seam===sm && s.depth===d).length;
           rowCells += `<td>${c}</td>`;
         });
