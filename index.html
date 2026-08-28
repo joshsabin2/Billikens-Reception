@@ -90,6 +90,17 @@
   .btn-ghost{background:transparent;color:var(--gray);border:1px solid rgba(255,255,255,.3);}
   .btn-ghost:hover{color:var(--white);border-color:var(--white);}
   .btn-theme{min-width:118px;}
+  .app-tabs{
+    display:flex;gap:8px;padding:14px 28px 0;
+  }
+  .tab-btn{
+    border:1.5px solid var(--line);background:var(--white);color:var(--navy);
+    border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+    cursor:pointer;
+  }
+  .tab-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
 
   /* ---------- layout ---------- */
   main{
@@ -119,15 +130,15 @@
 
   /* ---------- heat map panel ---------- */
   .heatmap-panel{position:sticky;top:20px;}
-  .view-toggle{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
-  .pill{
-    border:1.5px solid var(--line);background:var(--white);color:var(--navy);
-    border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;
-    cursor:pointer;transition:.12s ease;
+  .heat-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .heat-scope-wrap{display:flex;align-items:center;gap:8px;}
+  .heat-scope-wrap label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-soft);}
+  .heat-rotation-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .heat-rot-btn{
+    min-width:56px;border-radius:999px;border:1.5px solid var(--line);background:var(--white);color:var(--navy);
+    font-family:'Anton',sans-serif;font-size:14px;padding:6px 10px;cursor:pointer;
   }
-  .pill:hover{border-color:var(--blue);}
-  .pill.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
-  .pill.match-pill.active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+  .heat-rot-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
 
   .court-wrap{display:flex;gap:10px;}
   .depth-labels{display:flex;flex-direction:column;justify-content:space-between;padding:34px 0 6px;}
@@ -135,9 +146,18 @@
     font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);font-weight:700;
     writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
   }
-  .court{flex:1;}
+  .court{flex:1;position:relative;}
   .seam-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:6px;}
   .seam-labels div{text-align:center;font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.06em;}
+  .passer-overlay{
+    position:absolute;left:0;right:0;top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+    padding:0 8px;z-index:2;pointer-events:none;
+  }
+  .passer-chip{
+    background:rgba(0,36,77,.78);color:#fff;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:700;text-align:center;
+    text-transform:uppercase;letter-spacing:.04em;min-height:20px;
+  }
+  body[data-theme="dark"] .passer-chip{background:rgba(220,230,247,.25);}
   .net{
     height:12px;border-radius:3px;margin-bottom:6px;
     background:
@@ -245,6 +265,25 @@
   .submit-btn:disabled{background:#E7E9EA;color:#AEB4BC;cursor:not-allowed;}
   .submit-btn.logged{background:#2E9E5B;color:var(--white);}
   .last-logged{font-size:12px;color:var(--muted-soft);margin-top:8px;min-height:16px;}
+  .passer-editor{
+    border-top:1px solid var(--line);margin-top:16px;padding-top:14px;
+  }
+  .passer-editor-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  }
+  .passer-editor-grid input{
+    width:100%;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--white);color:var(--navy);
+    font-family:'Barlow Semi Condensed',sans-serif;font-size:14px;
+  }
+  .passer-editor-note{font-size:11px;color:var(--muted-soft);margin:6px 0 0;}
+  .lineup-panel{max-width:800px;margin:24px auto 0;}
+  .lineup-fields{display:grid;gap:12px;}
+  .lineup-fields label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);}
+  .lineup-fields input{
+    width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--white);color:var(--navy);
+    font-family:'Barlow Semi Condensed',sans-serif;font-size:15px;
+  }
+  .lineup-preview{margin-top:10px;font-size:13px;color:var(--muted);}
 
   .log-section{border-top:1px solid var(--line);padding-top:16px;}
   .log-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
@@ -316,6 +355,12 @@
     </div>
   </header>
 
+  <div class="app-tabs">
+    <button class="tab-btn active" id="mainTabBtn" type="button">Main</button>
+    <button class="tab-btn" id="lineupTabBtn" type="button">Lineup</button>
+  </div>
+
+  <div class="tab-content active" id="mainTab">
   <main>
     <!-- LEFT: ENTRY -->
     <section class="panel entry-panel">
@@ -359,12 +404,23 @@
       <div class="panel-title">
         <h2 id="heatmapTitle">Match Total</h2>
       </div>
-      <div class="view-toggle" id="viewToggle"></div>
+      <div class="heat-controls">
+        <div class="heat-scope-wrap">
+          <label for="heatScopeSelect">View</label>
+          <select id="heatScopeSelect"></select>
+        </div>
+        <div class="heat-rotation-row" id="heatRotationRow"></div>
+      </div>
 
       <div class="court-wrap">
         <div class="depth-labels"><div>A · Short</div><div>B · Medium</div><div>C · Deep</div></div>
         <div class="court">
           <div class="seam-labels" id="seamLabels"></div>
+          <div class="passer-overlay" id="passerOverlay">
+            <div class="passer-chip" id="passerChip12">1-2: —</div>
+            <div class="passer-chip" id="passerChip23">2-3: —</div>
+            <div class="passer-chip" id="passerChip34">3-4: —</div>
+          </div>
           <div class="net"></div>
           <div class="grid4x3" id="heatmapGrid"></div>
         </div>
@@ -380,8 +436,39 @@
         <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Serves shown</div></div>
         <div class="stat"><div class="n" id="statHot">—</div><div class="l">Hot zone</div></div>
       </div>
+      <div class="passer-editor">
+        <p class="selector-label" style="margin-bottom:8px;">Passing pattern — <span id="passerContextLabel">Set 1 · All rotations</span></p>
+        <div class="passer-editor-grid">
+          <input id="passerInput12" type="text" placeholder="Between seams 1–2" />
+          <input id="passerInput23" type="text" placeholder="Between seams 2–3" />
+          <input id="passerInput34" type="text" placeholder="Between seams 3–4" />
+        </div>
+        <p class="passer-editor-note">Pick a set and rotation above to store passers for that pattern.</p>
+      </div>
     </section>
   </main>
+  </div>
+
+  <div class="tab-content" id="lineupTab">
+    <section class="panel lineup-panel">
+      <p class="eyebrow">Lineup entry</p>
+      <div class="entry-header">
+        <h2 style="margin:0;color:var(--navy);font-size:20px;">Set lineup</h2>
+        <div class="set-select-wrap">
+          <label for="lineupSetSelect">Set</label>
+          <select id="lineupSetSelect"></select>
+        </div>
+      </div>
+      <div class="lineup-fields">
+        <label for="lineupPlayersInput">Lineup (comma separated, max 6)</label>
+        <input id="lineupPlayersInput" type="text" placeholder="Player 1, Player 2, Player 3..." />
+        <label for="lineupLiberoInput">Libero</label>
+        <input id="lineupLiberoInput" type="text" placeholder="Libero name" />
+        <button class="submit-btn" id="lineupSaveBtn" type="button">Save lineup</button>
+      </div>
+      <div class="lineup-preview" id="lineupPreview"></div>
+    </section>
+  </div>
 
   <footer>Data is saved to your device automatically. SLU Blue · Gateway Gold — Go Billikens.</footer>
 </div>
@@ -400,9 +487,12 @@
   const ROTATIONS = [1,2,3,4,5,6];
   const STORAGE_KEY = 'serve-tracker-state';
 
-  let state = { opponent:'', serves:[], lineups:{}, theme:'light' };
+  let state = { opponent:'', serves:[], lineups:{}, passers:{}, theme:'light' };
   let entrySet = 1;
-  let heatmapView = 'match'; // 'set1'..'set5' or 'match'
+  let lineupSet = 1;
+  let heatmapScope = 'match'; // 'set1'..'set5' or 'match'
+  let heatmapRotation = null; // null for all rotations
+  let activeTab = 'main';
   let lastAdded = null; // {rotation, seam, depth} — used to trigger the click-feedback flash
   const universalSelection = {rotation:null, seam:null, depth:null}; // shared picker state for the one Enter button
   const undoStack = [];
@@ -453,8 +543,30 @@
     if(!state || typeof state !== 'object') state = {};
     if(!Array.isArray(state.serves)) state.serves = [];
     if(!state.lineups || typeof state.lineups !== 'object') state.lineups = {};
+    if(!state.passers || typeof state.passers !== 'object') state.passers = {};
     if(state.theme !== 'dark') state.theme = 'light';
     if(typeof state.opponent !== 'string') state.opponent = '';
+    Object.keys(state.lineups).forEach(setKey=>{
+      const raw = state.lineups[setKey];
+      if(raw && Array.isArray(raw.players)){
+        state.lineups[setKey] = { players: raw.players.slice(0,6), libero: typeof raw.libero === 'string' ? raw.libero : '' };
+        return;
+      }
+      if(raw && typeof raw === 'object'){
+        let migratedPlayers = [];
+        ROTATIONS.some(r=>{
+          const legacy = raw[String(r)];
+          if(Array.isArray(legacy) && legacy.length){
+            migratedPlayers = legacy.slice(0,6);
+            return true;
+          }
+          return false;
+        });
+        state.lineups[setKey] = { players: migratedPlayers, libero: '' };
+        return;
+      }
+      state.lineups[setKey] = { players: [], libero: '' };
+    });
   }
   function captureUndo(){
     undoStack.push(JSON.stringify(state));
@@ -469,17 +581,36 @@
     renderAll();
     showToast('Undid last change');
   }
-  function getLineup(setNum, rotation){
-    const setLineups = state.lineups[String(setNum)] || {};
-    const lineup = setLineups[String(rotation)];
-    return Array.isArray(lineup) ? lineup.slice() : [];
+  function getLineup(setNum){
+    const lineup = state.lineups[String(setNum)];
+    return lineup && Array.isArray(lineup.players) ? lineup.players.slice(0,6) : [];
   }
-  function setLineup(setNum, rotation, players){
+  function getLibero(setNum){
+    const lineup = state.lineups[String(setNum)];
+    return lineup && typeof lineup.libero === 'string' ? lineup.libero : '';
+  }
+  function setLineup(setNum, players, libero){
+    captureUndo();
+    const setKey = String(setNum);
+    state.lineups[setKey] = { players: players.slice(0,6), libero: (libero || '').trim() };
+    saveState();
+    renderAll();
+  }
+  function getPassers(setNum, rotation){
+    const setPassers = state.passers[String(setNum)] || {};
+    const entry = setPassers[String(rotation)] || {};
+    return { s12: entry.s12 || '', s23: entry.s23 || '', s34: entry.s34 || '' };
+  }
+  function setPassers(setNum, rotation, passers){
     captureUndo();
     const setKey = String(setNum);
     const rotKey = String(rotation);
-    if(!state.lineups[setKey]) state.lineups[setKey] = {};
-    state.lineups[setKey][rotKey] = players.slice(0,6);
+    if(!state.passers[setKey]) state.passers[setKey] = {};
+    state.passers[setKey][rotKey] = {
+      s12: (passers.s12 || '').trim(),
+      s23: (passers.s23 || '').trim(),
+      s34: (passers.s34 || '').trim()
+    };
     saveState();
     renderAll();
   }
@@ -557,53 +688,6 @@
     saveState();
     renderAll();
   }
-  function editLineupForRotation(rotation, setNum = entrySet){
-    const current = getLineup(setNum, rotation);
-    const raw = prompt(`Set ${setNum} Rotation ${rotation} lineup (comma separated, max 6):`, current.join(', '));
-    if(raw === null) return;
-    const players = parseLineupInput(raw);
-    setLineup(setNum, rotation, players);
-    showToast(players.length ? `Saved lineup for R${rotation}` : `Cleared lineup for R${rotation}`);
-  }
-  function substituteForRotation(rotation, setNum = entrySet){
-    const lineup = getLineup(setNum, rotation);
-    if(lineup.length===0){
-      showToast('Set lineup first');
-      return;
-    }
-    const outRaw = prompt(`Set ${setNum} Rotation ${rotation}: who is coming out?`, lineup[0]);
-    if(outRaw === null) return;
-    const outName = outRaw.trim();
-    if(!outName) return;
-    const idx = lineup.findIndex(p=>p.toLowerCase()===outName.toLowerCase());
-    if(idx<0){
-      alert('That player is not in this lineup.');
-      return;
-    }
-    const inRaw = prompt(`Who is going in for ${lineup[idx]}?`, '');
-    if(inRaw === null) return;
-    const inName = inRaw.trim();
-    if(!inName) return;
-    lineup[idx] = inName;
-    setLineup(setNum, rotation, lineup);
-    showToast(`Sub made: ${outName} → ${inName}`);
-  }
-  function promptLineupChanges(setNum){
-    const wantsChanges = confirm(`Set ${setNum} selected. Any lineup changes?`);
-    if(!wantsChanges) return;
-    const raw = prompt('Which rotation needs a change? Enter 1-6.', '');
-    if(raw === null) return;
-    const rotation = parseInt(raw,10);
-    if(!ROTATIONS.includes(rotation)){
-      alert('Please enter a rotation from 1 to 6.');
-      return;
-    }
-    if(confirm('Press OK to edit the full lineup. Press Cancel to make a substitution.')){
-      editLineupForRotation(rotation, setNum);
-    }else{
-      substituteForRotation(rotation, setNum);
-    }
-  }
   function undoLastForRotation(rotation){
     for(let i = state.serves.length-1; i>=0; i--){
       const s = state.serves[i];
@@ -625,7 +709,7 @@
   function clearAll(){
     if(confirm('Reset all logged serves and the opponent name? This cannot be undone.')){
       captureUndo();
-      state = {opponent:'', serves:[], lineups:{}, theme:state.theme || 'light'};
+      state = {opponent:'', serves:[], lineups:{}, passers:{}, theme:state.theme || 'light'};
       saveState();
       renderAll();
       showToast('Data reset');
@@ -634,33 +718,91 @@
 
   // ---------- render: heat map ----------
   function currentHeatList(){
-    if(heatmapView === 'match') return state.serves.slice();
-    const setNum = parseInt(heatmapView.replace('set',''),10);
-    return filterServes({set:setNum});
+    if(heatmapScope === 'match'){
+      return heatmapRotation ? filterServes({rotation:heatmapRotation}) : state.serves.slice();
+    }
+    const setNum = parseInt(heatmapScope.replace('set',''),10);
+    return heatmapRotation ? filterServes({set:setNum, rotation:heatmapRotation}) : filterServes({set:setNum});
   }
 
-  function renderViewToggle(){
-    const wrap = document.getElementById('viewToggle');
-    wrap.innerHTML = '';
-    SETS.forEach(n=>{
+  function getPasserContext(){
+    if(heatmapScope === 'match' || !heatmapRotation) return null;
+    return { setNum: parseInt(heatmapScope.replace('set',''),10), rotation: heatmapRotation };
+  }
+
+  function renderHeatControls(){
+    const scopeSelect = document.getElementById('heatScopeSelect');
+    if(!scopeSelect.dataset.built){
+      const matchOpt = document.createElement('option');
+      matchOpt.value = 'match';
+      matchOpt.textContent = 'Match total';
+      scopeSelect.appendChild(matchOpt);
+      SETS.forEach(n=>{
+        const o = document.createElement('option');
+        o.value = 'set'+n;
+        o.textContent = 'Set ' + n;
+        scopeSelect.appendChild(o);
+      });
+      scopeSelect.dataset.built = '1';
+      scopeSelect.onchange = ()=>{
+        heatmapScope = scopeSelect.value;
+        renderHeatmap();
+        renderHeatControls();
+      };
+    }
+    scopeSelect.value = heatmapScope;
+
+    const row = document.getElementById('heatRotationRow');
+    row.innerHTML = '';
+    const allBtn = document.createElement('button');
+    allBtn.type = 'button';
+    allBtn.className = 'heat-rot-btn' + (heatmapRotation===null ? ' active' : '');
+    allBtn.textContent = 'All';
+    allBtn.onclick = ()=>{ heatmapRotation = null; renderHeatmap(); renderHeatControls(); };
+    row.appendChild(allBtn);
+    ROTATIONS.forEach(r=>{
       const b = document.createElement('button');
-      b.className = 'pill' + (heatmapView===('set'+n) ? ' active' : '');
-      b.textContent = 'Set ' + n;
-      b.onclick = ()=>{ heatmapView = 'set'+n; renderHeatmap(); renderViewToggle(); };
-      wrap.appendChild(b);
+      b.type = 'button';
+      b.className = 'heat-rot-btn' + (heatmapRotation===r ? ' active' : '');
+      b.textContent = 'R' + r;
+      b.onclick = ()=>{ heatmapRotation = r; renderHeatmap(); renderHeatControls(); };
+      row.appendChild(b);
     });
-    const m = document.createElement('button');
-    m.className = 'pill match-pill' + (heatmapView==='match' ? ' active' : '');
-    m.textContent = 'Match Total';
-    m.onclick = ()=>{ heatmapView = 'match'; renderHeatmap(); renderViewToggle(); };
-    wrap.appendChild(m);
+  }
+
+  function renderPasserOverlay(){
+    const ctx = getPasserContext();
+    const vals = ctx ? getPassers(ctx.setNum, ctx.rotation) : {s12:'',s23:'',s34:''};
+    document.getElementById('passerChip12').textContent = `1-2: ${vals.s12 || '—'}`;
+    document.getElementById('passerChip23').textContent = `2-3: ${vals.s23 || '—'}`;
+    document.getElementById('passerChip34').textContent = `3-4: ${vals.s34 || '—'}`;
+  }
+
+  function renderPasserEditor(){
+    const ctx = getPasserContext();
+    const i12 = document.getElementById('passerInput12');
+    const i23 = document.getElementById('passerInput23');
+    const i34 = document.getElementById('passerInput34');
+    const label = document.getElementById('passerContextLabel');
+    if(ctx){
+      const vals = getPassers(ctx.setNum, ctx.rotation);
+      i12.disabled = false; i23.disabled = false; i34.disabled = false;
+      i12.value = vals.s12; i23.value = vals.s23; i34.value = vals.s34;
+      label.textContent = `Set ${ctx.setNum} · Rotation ${ctx.rotation}`;
+    }else{
+      i12.disabled = true; i23.disabled = true; i34.disabled = true;
+      i12.value = ''; i23.value = ''; i34.value = '';
+      label.textContent = heatmapScope === 'match' ? 'Match view · choose a set to edit' : 'Set view · choose a rotation to edit';
+    }
   }
 
   function renderHeatmap(){
     const list = currentHeatList();
     const matrix = countMatrix(list);
     const max = maxOf(matrix);
-    const title = heatmapView==='match' ? 'Match Total' : ('Set ' + heatmapView.replace('set',''));
+    const scopeLabel = heatmapScope==='match' ? 'Match Total' : ('Set ' + heatmapScope.replace('set',''));
+    const rotLabel = heatmapRotation ? ('Rotation ' + heatmapRotation) : 'All Rotations';
+    const title = scopeLabel + ' · ' + rotLabel;
     document.getElementById('heatmapTitle').textContent = title;
 
     const grid = document.getElementById('heatmapGrid');
@@ -693,6 +835,8 @@
       }
     }
     document.getElementById('statHot').textContent = hotLabel;
+    renderPasserOverlay();
+    renderPasserEditor();
   }
   function renderSeamLabels(){
     const el = document.getElementById('seamLabels');
@@ -720,7 +864,6 @@
         entrySet = nextSet;
         renderRotationPanels();
         renderLog();
-        promptLineupChanges(nextSet);
       };
     }
     sel.value = entrySet;
@@ -803,28 +946,6 @@
       lastEl.textContent = list[0] ? `Last: Seam ${list[0].seam}${DEPTH_LABEL[list[0].depth]} (${DEPTH_HINT[list[0].depth]})` : 'No serves logged yet';
       card.appendChild(lastEl);
 
-      const lineup = getLineup(entrySet, r);
-      const lineupText = document.createElement('div');
-      lineupText.className = 'lineup-text';
-      lineupText.textContent = lineup.length ? `Lineup: ${lineup.join(', ')}` : 'Lineup: not set';
-      card.appendChild(lineupText);
-
-      const lineupActions = document.createElement('div');
-      lineupActions.className = 'lineup-actions';
-      const setBtn = document.createElement('button');
-      setBtn.type = 'button';
-      setBtn.className = 'mini-btn';
-      setBtn.textContent = lineup.length ? 'Edit lineup' : 'Set lineup';
-      setBtn.onclick = ()=> editLineupForRotation(r);
-      lineupActions.appendChild(setBtn);
-      const subBtn = document.createElement('button');
-      subBtn.type = 'button';
-      subBtn.className = 'mini-btn';
-      subBtn.textContent = 'Substitute';
-      subBtn.onclick = ()=> substituteForRotation(r);
-      lineupActions.appendChild(subBtn);
-      card.appendChild(lineupActions);
-
       const undo = document.createElement('button');
       undo.className = 'undo-btn';
       undo.textContent = 'Undo last';
@@ -834,6 +955,54 @@
 
       wrap.appendChild(card);
     });
+  }
+
+  function renderLineupTab(){
+    const sel = document.getElementById('lineupSetSelect');
+    if(!sel.dataset.built){
+      SETS.forEach(n=>{
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = 'Set ' + n;
+        sel.appendChild(o);
+      });
+      sel.dataset.built = '1';
+      sel.onchange = ()=>{
+        lineupSet = parseInt(sel.value,10);
+        renderLineupTab();
+      };
+      document.getElementById('lineupSaveBtn').onclick = ()=>{
+        const players = parseLineupInput(document.getElementById('lineupPlayersInput').value);
+        const libero = document.getElementById('lineupLiberoInput').value.trim();
+        setLineup(lineupSet, players, libero);
+        showToast(`Saved lineup for Set ${lineupSet}`);
+      };
+    }
+    sel.value = lineupSet;
+    const players = getLineup(lineupSet);
+    const libero = getLibero(lineupSet);
+    document.getElementById('lineupPlayersInput').value = players.join(', ');
+    document.getElementById('lineupLiberoInput').value = libero;
+    document.getElementById('lineupPreview').textContent = players.length
+      ? `Saved: ${players.join(', ')}${libero ? ` · Libero: ${libero}` : ''}`
+      : `No lineup saved for Set ${lineupSet}`;
+  }
+
+  function savePasserInputs(){
+    const ctx = getPasserContext();
+    if(!ctx) return;
+    const s12 = document.getElementById('passerInput12').value;
+    const s23 = document.getElementById('passerInput23').value;
+    const s34 = document.getElementById('passerInput34').value;
+    setPassers(ctx.setNum, ctx.rotation, {s12, s23, s34});
+  }
+
+  function renderTabs(){
+    const mainActive = activeTab === 'main';
+    document.getElementById('mainTab').classList.toggle('active', mainActive);
+    document.getElementById('lineupTab').classList.toggle('active', !mainActive);
+    document.getElementById('mainTabBtn').classList.toggle('active', mainActive);
+    document.getElementById('lineupTabBtn').classList.toggle('active', !mainActive);
   }
 
   function renderLog(){
@@ -877,12 +1046,14 @@
   function renderAll(){
     applyTheme();
     document.getElementById('opponentInput').value = state.opponent || '';
+    renderTabs();
     renderSeamLabels();
-    renderViewToggle();
+    renderHeatControls();
     renderHeatmap();
     renderEntrySetSelect();
     renderMasterEntry();
     renderRotationPanels();
+    renderLineupTab();
     renderLog();
     flashLastAdded();
   }
@@ -948,6 +1119,17 @@
   document.getElementById('themeToggle').addEventListener('click', toggleTheme);
   document.getElementById('undoLastBtn').addEventListener('click', undoLastChange);
   document.getElementById('clearBtn').addEventListener('click', clearAll);
+  document.getElementById('mainTabBtn').addEventListener('click', ()=>{
+    activeTab = 'main';
+    renderTabs();
+  });
+  document.getElementById('lineupTabBtn').addEventListener('click', ()=>{
+    activeTab = 'lineup';
+    renderTabs();
+  });
+  document.getElementById('passerInput12').addEventListener('change', savePasserInputs);
+  document.getElementById('passerInput23').addEventListener('change', savePasserInputs);
+  document.getElementById('passerInput34').addEventListener('change', savePasserInputs);
 
   loadState();
 })();
