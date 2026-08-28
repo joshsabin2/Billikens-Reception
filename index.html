@@ -19,26 +19,7 @@
     --white:#FFFFFF;
     --heat-0:#EDF0F4;
     --line:#D8DBDD;
-    --card-surface:#FBFBFA;
-    --muted:#6D7683;
-    --muted-soft:#7A8290;
     --radius:10px;
-  }
-  body[data-theme="dark"]{
-    --navy:#DCE6F7;
-    --blue:#4E8BFF;
-    --gold:#FFD66B;
-    --gray:#6A7381;
-    --beige:#2A3038;
-    --bronze:#D2B084;
-    --ink:#EEF3FB;
-    --paper:#10151C;
-    --white:#1A212B;
-    --heat-0:#2D3847;
-    --line:#39485D;
-    --card-surface:#1C2531;
-    --muted:#B8C4D8;
-    --muted-soft:#A7B4C8;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -89,18 +70,6 @@
   .btn-gold:hover{box-shadow:0 4px 14px rgba(255,199,44,.45);}
   .btn-ghost{background:transparent;color:var(--gray);border:1px solid rgba(255,255,255,.3);}
   .btn-ghost:hover{color:var(--white);border-color:var(--white);}
-  .btn-theme{min-width:118px;}
-  .app-tabs{
-    display:flex;gap:8px;padding:14px 28px 0;
-  }
-  .tab-btn{
-    border:1.5px solid var(--line);background:var(--white);color:var(--navy);
-    border-radius:999px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-    cursor:pointer;
-  }
-  .tab-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
-  .tab-content{display:none;}
-  .tab-content.active{display:block;}
 
   /* ---------- layout ---------- */
   main{
@@ -130,15 +99,15 @@
 
   /* ---------- heat map panel ---------- */
   .heatmap-panel{position:sticky;top:20px;}
-  .heat-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-  .heat-scope-wrap{display:flex;align-items:center;gap:8px;}
-  .heat-scope-wrap label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-soft);}
-  .heat-rotation-row{display:flex;gap:6px;flex-wrap:wrap;}
-  .heat-rot-btn{
-    min-width:56px;border-radius:999px;border:1.5px solid var(--line);background:var(--white);color:var(--navy);
-    font-family:'Anton',sans-serif;font-size:14px;padding:6px 10px;cursor:pointer;
+  .view-toggle{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
+  .pill{
+    border:1.5px solid var(--line);background:var(--white);color:var(--navy);
+    border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;
+    cursor:pointer;transition:.12s ease;
   }
-  .heat-rot-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .pill:hover{border-color:var(--blue);}
+  .pill.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .pill.match-pill.active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
 
   .court-wrap{display:flex;gap:10px;}
   .depth-labels{display:flex;flex-direction:column;justify-content:space-between;padding:34px 0 6px;}
@@ -146,18 +115,9 @@
     font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);font-weight:700;
     writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
   }
-  .court{flex:1;position:relative;}
-  .seam-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:6px;}
+  .court{flex:1;}
+  .seam-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;}
   .seam-labels div{text-align:center;font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.06em;}
-  .passer-overlay{
-    position:absolute;left:0;right:0;top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
-    padding:0 8px;z-index:2;pointer-events:none;
-  }
-  .passer-chip{
-    background:rgba(0,36,77,.78);color:#fff;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:700;text-align:center;
-    text-transform:uppercase;letter-spacing:.04em;min-height:20px;
-  }
-  body[data-theme="dark"] .passer-chip{background:rgba(220,230,247,.25);}
   .net{
     height:12px;border-radius:3px;margin-bottom:6px;
     background:
@@ -165,23 +125,15 @@
       linear-gradient(var(--gray),var(--gray));
     border:1px solid var(--navy);
   }
-  .grid4x3{
-    display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:0;
-    border:2px solid var(--navy);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;
-    background:linear-gradient(180deg, rgba(0,61,165,.07), rgba(0,61,165,.03));
-  }
+  .grid4x3{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;}
   .cell{
     aspect-ratio:1/.82;
+    border-radius:8px;
     display:flex;align-items:center;justify-content:center;
     position:relative;
-    border-right:1px solid var(--line);
-    border-bottom:1px solid var(--line);
+    border:1px solid var(--line);
     transition:transform .1s ease;
   }
-  .cell:nth-child(4n){border-right:none;}
-  .cell:nth-child(n+9){border-bottom:none;}
-  .cell:nth-child(n+5):nth-child(-n+8){box-shadow:inset 0 1px 0 rgba(0,36,77,.28);}
-  body[data-theme="dark"] .cell:nth-child(n+5):nth-child(-n+8){box-shadow:inset 0 1px 0 rgba(220,230,247,.28);}
   .cell .count{font-family:'Anton',sans-serif;font-size:22px;color:var(--navy);}
   .cell .count.zero{color:#B7BFC9;font-size:16px;}
   .cell.hot{outline:2.5px solid var(--gold);outline-offset:-2.5px;}
@@ -212,29 +164,22 @@
   @media (max-width:720px){ .rotation-grid{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:480px){ .rotation-grid{grid-template-columns:1fr;} }
   .rotation-card{
-    border:1.5px solid var(--line);border-radius:12px;padding:14px;background:var(--card-surface);
+    border:1.5px solid var(--line);border-radius:12px;padding:14px;background:#FBFBFA;
   }
   .rotation-card .rc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
   .rotation-card .rc-head .rname{font-family:'Anton',sans-serif;font-size:17px;color:var(--navy);}
   .rotation-card .rc-head .rtotal{font-size:12px;color:var(--bronze);font-weight:700;}
   .undo-btn{
-    background:none;border:none;color:var(--muted-soft);font-size:12px;cursor:pointer;text-decoration:underline;
+    background:none;border:none;color:#9AA1AC;font-size:12px;cursor:pointer;text-decoration:underline;
     padding:8px 0 0;display:inline-block;
   }
   .undo-btn:hover{color:var(--blue);}
-  .lineup-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
-  .mini-btn{
-    background:var(--paper);border:1px solid var(--line);color:var(--navy);font-size:11px;font-weight:700;
-    border-radius:999px;padding:6px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;
-  }
-  .mini-btn:hover{border-color:var(--blue);}
-  .lineup-text{margin-top:8px;color:var(--muted);font-size:12px;min-height:16px;}
 
   .master-entry{
-    background:linear-gradient(180deg,var(--card-surface),var(--paper));
+    background:linear-gradient(180deg,#FBFBFA,#F3F4F2);
     border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 18px;margin-bottom:22px;
   }
-  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-soft);font-weight:700;margin:0 0 5px;}
+  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:#8A919C;font-weight:700;margin:0 0 5px;}
   .rotation-btn{
     flex:1;min-height:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
     font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);cursor:pointer;
@@ -264,26 +209,7 @@
   .submit-btn:active{transform:scale(.97);}
   .submit-btn:disabled{background:#E7E9EA;color:#AEB4BC;cursor:not-allowed;}
   .submit-btn.logged{background:#2E9E5B;color:var(--white);}
-  .last-logged{font-size:12px;color:var(--muted-soft);margin-top:8px;min-height:16px;}
-  .passer-editor{
-    border-top:1px solid var(--line);margin-top:16px;padding-top:14px;
-  }
-  .passer-editor-grid{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
-  }
-  .passer-editor-grid input{
-    width:100%;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--white);color:var(--navy);
-    font-family:'Barlow Semi Condensed',sans-serif;font-size:14px;
-  }
-  .passer-editor-note{font-size:11px;color:var(--muted-soft);margin:6px 0 0;}
-  .lineup-panel{max-width:800px;margin:24px auto 0;}
-  .lineup-fields{display:grid;gap:12px;}
-  .lineup-fields label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);}
-  .lineup-fields input{
-    width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--white);color:var(--navy);
-    font-family:'Barlow Semi Condensed',sans-serif;font-size:15px;
-  }
-  .lineup-preview{margin-top:10px;font-size:13px;color:var(--muted);}
+  .last-logged{font-size:12px;color:#7A8290;margin-top:8px;min-height:16px;}
 
   .log-section{border-top:1px solid var(--line);padding-top:16px;}
   .log-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
@@ -348,19 +274,11 @@
         <span>vs</span>
         <input id="opponentInput" type="text" placeholder="Opponent name" />
       </div>
-      <button class="btn btn-ghost btn-theme" id="themeToggle" type="button">Dark Mode</button>
-      <button class="btn btn-ghost" id="undoLastBtn" type="button">Undo Last</button>
       <button class="btn btn-ghost" id="clearBtn" type="button">Reset Data</button>
       <button class="btn btn-gold" id="exportBtn" type="button">Export PDF</button>
     </div>
   </header>
 
-  <div class="app-tabs">
-    <button class="tab-btn active" id="mainTabBtn" type="button">Main</button>
-    <button class="tab-btn" id="lineupTabBtn" type="button">Lineup</button>
-  </div>
-
-  <div class="tab-content active" id="mainTab">
   <main>
     <!-- LEFT: ENTRY -->
     <section class="panel entry-panel">
@@ -374,7 +292,7 @@
           <select id="entrySetSelect"></select>
         </div>
       </div>
-      <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. Rotation stays selected so you can log back-to-back serves in the same rotation, and seam/depth clear for the next pass.</p>
+      <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. Your picks stay selected so back-to-back serves to the same spot are a quick double-tap — just switch the rotation whenever you rotate.</p>
 
       <div class="master-entry">
         <p class="selector-label">Rotation</p>
@@ -404,22 +322,13 @@
       <div class="panel-title">
         <h2 id="heatmapTitle">Match Total</h2>
       </div>
-      <div class="heat-controls">
-        <div class="heat-scope-wrap">
-          <label for="heatScopeSelect">View</label>
-          <select id="heatScopeSelect"></select>
-        </div>
-        <div class="heat-rotation-row" id="heatRotationRow"></div>
-      </div>
+      <div class="view-toggle" id="viewToggle"></div>
 
       <div class="court-wrap">
         <div class="depth-labels"><div>A · Short</div><div>B · Medium</div><div>C · Deep</div></div>
         <div class="court">
-          <div class="seam-labels" id="seamLabels"></div>
-          <div class="passer-overlay" id="passerOverlay">
-            <div class="passer-chip" id="passerChip12">1-2: —</div>
-            <div class="passer-chip" id="passerChip23">2-3: —</div>
-            <div class="passer-chip" id="passerChip34">3-4: —</div>
+          <div class="seam-labels">
+            <div>Seam 1</div><div>Seam 2</div><div>Seam 3</div><div>Seam 4</div>
           </div>
           <div class="net"></div>
           <div class="grid4x3" id="heatmapGrid"></div>
@@ -436,39 +345,8 @@
         <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Serves shown</div></div>
         <div class="stat"><div class="n" id="statHot">—</div><div class="l">Hot zone</div></div>
       </div>
-      <div class="passer-editor">
-        <p class="selector-label" style="margin-bottom:8px;">Passing pattern — <span id="passerContextLabel">Set 1 · All rotations</span></p>
-        <div class="passer-editor-grid">
-          <input id="passerInput12" type="text" placeholder="Between seams 1–2" />
-          <input id="passerInput23" type="text" placeholder="Between seams 2–3" />
-          <input id="passerInput34" type="text" placeholder="Between seams 3–4" />
-        </div>
-        <p class="passer-editor-note">Pick a set and rotation above to store passers for that pattern.</p>
-      </div>
     </section>
   </main>
-  </div>
-
-  <div class="tab-content" id="lineupTab">
-    <section class="panel lineup-panel">
-      <p class="eyebrow">Lineup entry</p>
-      <div class="entry-header">
-        <h2 style="margin:0;color:var(--navy);font-size:20px;">Set lineup</h2>
-        <div class="set-select-wrap">
-          <label for="lineupSetSelect">Set</label>
-          <select id="lineupSetSelect"></select>
-        </div>
-      </div>
-      <div class="lineup-fields">
-        <label for="lineupPlayersInput">Lineup (comma separated, max 6)</label>
-        <input id="lineupPlayersInput" type="text" placeholder="Player 1, Player 2, Player 3..." />
-        <label for="lineupLiberoInput">Libero</label>
-        <input id="lineupLiberoInput" type="text" placeholder="Libero name" />
-        <button class="submit-btn" id="lineupSaveBtn" type="button">Save lineup</button>
-      </div>
-      <div class="lineup-preview" id="lineupPreview"></div>
-    </section>
-  </div>
 
   <footer>Data is saved to your device automatically. SLU Blue · Gateway Gold — Go Billikens.</footer>
 </div>
@@ -479,7 +357,6 @@
 <script>
 (function(){
   const SEAMS = [1,2,3,4];
-  const HEATMAP_SEAMS = [4,3,2,1];
   const DEPTHS = ['a','b','c'];
   const DEPTH_LABEL = {a:'A', b:'B', c:'C'};
   const DEPTH_HINT = {a:'Short', b:'Medium', c:'Deep'};
@@ -487,15 +364,11 @@
   const ROTATIONS = [1,2,3,4,5,6];
   const STORAGE_KEY = 'serve-tracker-state';
 
-  let state = { opponent:'', serves:[], lineups:{}, passers:{}, theme:'light' };
+  let state = { opponent:'', serves:[] };
   let entrySet = 1;
-  let lineupSet = 1;
-  let heatmapScope = 'match'; // 'set1'..'set5' or 'match'
-  let heatmapRotation = null; // null for all rotations
-  let activeTab = 'main';
+  let heatmapView = 'match'; // 'set1'..'set5' or 'match'
   let lastAdded = null; // {rotation, seam, depth} — used to trigger the click-feedback flash
   const universalSelection = {rotation:null, seam:null, depth:null}; // shared picker state for the one Enter button
-  const undoStack = [];
 
   // ---------- persistence ----------
   function hasClaudeStorage(){
@@ -520,8 +393,6 @@
         }
       }catch(e){ /* nothing saved there either */ }
     }
-    normalizeState();
-    applyTheme();
     renderAll();
   }
   async function saveState(){
@@ -539,99 +410,6 @@
 
   // ---------- helpers ----------
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-  function normalizeState(){
-    if(!state || typeof state !== 'object') state = {};
-    if(!Array.isArray(state.serves)) state.serves = [];
-    if(!state.lineups || typeof state.lineups !== 'object') state.lineups = {};
-    if(!state.passers || typeof state.passers !== 'object') state.passers = {};
-    if(state.theme !== 'dark') state.theme = 'light';
-    if(typeof state.opponent !== 'string') state.opponent = '';
-    Object.keys(state.lineups).forEach(setKey=>{
-      const raw = state.lineups[setKey];
-      if(raw && Array.isArray(raw.players)){
-        state.lineups[setKey] = { players: raw.players.slice(0,6), libero: typeof raw.libero === 'string' ? raw.libero : '' };
-        return;
-      }
-      if(raw && typeof raw === 'object'){
-        let migratedPlayers = [];
-        ROTATIONS.some(r=>{
-          const legacy = raw[String(r)];
-          if(Array.isArray(legacy) && legacy.length){
-            migratedPlayers = legacy.slice(0,6);
-            return true;
-          }
-          return false;
-        });
-        state.lineups[setKey] = { players: migratedPlayers, libero: '' };
-        return;
-      }
-      state.lineups[setKey] = { players: [], libero: '' };
-    });
-  }
-  function captureUndo(){
-    undoStack.push(JSON.stringify(state));
-    if(undoStack.length > 40) undoStack.shift();
-  }
-  function undoLastChange(){
-    if(undoStack.length===0){ showToast('Nothing to undo'); return; }
-    state = JSON.parse(undoStack.pop());
-    normalizeState();
-    applyTheme();
-    saveState();
-    renderAll();
-    showToast('Undid last change');
-  }
-  function getLineup(setNum){
-    const lineup = state.lineups[String(setNum)];
-    return lineup && Array.isArray(lineup.players) ? lineup.players.slice(0,6) : [];
-  }
-  function getLibero(setNum){
-    const lineup = state.lineups[String(setNum)];
-    return lineup && typeof lineup.libero === 'string' ? lineup.libero : '';
-  }
-  function setLineup(setNum, players, libero){
-    captureUndo();
-    const setKey = String(setNum);
-    state.lineups[setKey] = { players: players.slice(0,6), libero: (libero || '').trim() };
-    saveState();
-    renderAll();
-  }
-  function getPassers(setNum, rotation){
-    const setPassers = state.passers[String(setNum)] || {};
-    const entry = setPassers[String(rotation)] || {};
-    return { s12: entry.s12 || '', s23: entry.s23 || '', s34: entry.s34 || '' };
-  }
-  function setPassers(setNum, rotation, passers){
-    captureUndo();
-    const setKey = String(setNum);
-    const rotKey = String(rotation);
-    if(!state.passers[setKey]) state.passers[setKey] = {};
-    state.passers[setKey][rotKey] = {
-      s12: (passers.s12 || '').trim(),
-      s23: (passers.s23 || '').trim(),
-      s34: (passers.s34 || '').trim()
-    };
-    saveState();
-    renderAll();
-  }
-  function parseLineupInput(raw){
-    return (raw || '')
-      .split(',')
-      .map(v=>v.trim())
-      .filter(Boolean)
-      .slice(0,6);
-  }
-  function applyTheme(){
-    document.body.dataset.theme = state.theme === 'dark' ? 'dark' : 'light';
-    const b = document.getElementById('themeToggle');
-    if(b) b.textContent = state.theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-  }
-  function toggleTheme(){
-    captureUndo();
-    state.theme = state.theme === 'dark' ? 'light' : 'dark';
-    applyTheme();
-    saveState();
-  }
 
   function filterServes({set, rotation}){
     return state.serves.filter(s=>{
@@ -682,7 +460,6 @@
 
   // ---------- actions ----------
   function addServe(rotation, seam, depth){
-    captureUndo();
     state.serves.push({id:uid(), set:entrySet, rotation, seam, depth, ts:Date.now()});
     lastAdded = {rotation, seam, depth};
     saveState();
@@ -692,7 +469,6 @@
     for(let i = state.serves.length-1; i>=0; i--){
       const s = state.serves[i];
       if(s.set===entrySet && s.rotation===rotation){
-        captureUndo();
         state.serves.splice(i,1);
         saveState();
         renderAll();
@@ -701,15 +477,13 @@
     }
   }
   function deleteServe(id){
-    captureUndo();
     state.serves = state.serves.filter(s=>s.id!==id);
     saveState();
     renderAll();
   }
   function clearAll(){
     if(confirm('Reset all logged serves and the opponent name? This cannot be undone.')){
-      captureUndo();
-      state = {opponent:'', serves:[], lineups:{}, passers:{}, theme:state.theme || 'light'};
+      state = {opponent:'', serves:[]};
       saveState();
       renderAll();
       showToast('Data reset');
@@ -718,97 +492,39 @@
 
   // ---------- render: heat map ----------
   function currentHeatList(){
-    if(heatmapScope === 'match'){
-      return heatmapRotation ? filterServes({rotation:heatmapRotation}) : state.serves.slice();
-    }
-    const setNum = parseInt(heatmapScope.replace('set',''),10);
-    return heatmapRotation ? filterServes({set:setNum, rotation:heatmapRotation}) : filterServes({set:setNum});
+    if(heatmapView === 'match') return state.serves.slice();
+    const setNum = parseInt(heatmapView.replace('set',''),10);
+    return filterServes({set:setNum});
   }
 
-  function getPasserContext(){
-    if(heatmapScope === 'match' || !heatmapRotation) return null;
-    return { setNum: parseInt(heatmapScope.replace('set',''),10), rotation: heatmapRotation };
-  }
-
-  function renderHeatControls(){
-    const scopeSelect = document.getElementById('heatScopeSelect');
-    if(!scopeSelect.dataset.built){
-      const matchOpt = document.createElement('option');
-      matchOpt.value = 'match';
-      matchOpt.textContent = 'Match total';
-      scopeSelect.appendChild(matchOpt);
-      SETS.forEach(n=>{
-        const o = document.createElement('option');
-        o.value = 'set'+n;
-        o.textContent = 'Set ' + n;
-        scopeSelect.appendChild(o);
-      });
-      scopeSelect.dataset.built = '1';
-      scopeSelect.onchange = ()=>{
-        heatmapScope = scopeSelect.value;
-        renderHeatmap();
-        renderHeatControls();
-      };
-    }
-    scopeSelect.value = heatmapScope;
-
-    const row = document.getElementById('heatRotationRow');
-    row.innerHTML = '';
-    const allBtn = document.createElement('button');
-    allBtn.type = 'button';
-    allBtn.className = 'heat-rot-btn' + (heatmapRotation===null ? ' active' : '');
-    allBtn.textContent = 'All';
-    allBtn.onclick = ()=>{ heatmapRotation = null; renderHeatmap(); renderHeatControls(); };
-    row.appendChild(allBtn);
-    ROTATIONS.forEach(r=>{
+  function renderViewToggle(){
+    const wrap = document.getElementById('viewToggle');
+    wrap.innerHTML = '';
+    SETS.forEach(n=>{
       const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'heat-rot-btn' + (heatmapRotation===r ? ' active' : '');
-      b.textContent = 'R' + r;
-      b.onclick = ()=>{ heatmapRotation = r; renderHeatmap(); renderHeatControls(); };
-      row.appendChild(b);
+      b.className = 'pill' + (heatmapView===('set'+n) ? ' active' : '');
+      b.textContent = 'Set ' + n;
+      b.onclick = ()=>{ heatmapView = 'set'+n; renderHeatmap(); renderViewToggle(); };
+      wrap.appendChild(b);
     });
-  }
-
-  function renderPasserOverlay(){
-    const ctx = getPasserContext();
-    const vals = ctx ? getPassers(ctx.setNum, ctx.rotation) : {s12:'',s23:'',s34:''};
-    document.getElementById('passerChip12').textContent = `1-2: ${vals.s12 || '—'}`;
-    document.getElementById('passerChip23').textContent = `2-3: ${vals.s23 || '—'}`;
-    document.getElementById('passerChip34').textContent = `3-4: ${vals.s34 || '—'}`;
-  }
-
-  function renderPasserEditor(){
-    const ctx = getPasserContext();
-    const i12 = document.getElementById('passerInput12');
-    const i23 = document.getElementById('passerInput23');
-    const i34 = document.getElementById('passerInput34');
-    const label = document.getElementById('passerContextLabel');
-    if(ctx){
-      const vals = getPassers(ctx.setNum, ctx.rotation);
-      i12.disabled = false; i23.disabled = false; i34.disabled = false;
-      i12.value = vals.s12; i23.value = vals.s23; i34.value = vals.s34;
-      label.textContent = `Set ${ctx.setNum} · Rotation ${ctx.rotation}`;
-    }else{
-      i12.disabled = true; i23.disabled = true; i34.disabled = true;
-      i12.value = ''; i23.value = ''; i34.value = '';
-      label.textContent = heatmapScope === 'match' ? 'Match view · choose a set to edit' : 'Set view · choose a rotation to edit';
-    }
+    const m = document.createElement('button');
+    m.className = 'pill match-pill' + (heatmapView==='match' ? ' active' : '');
+    m.textContent = 'Match Total';
+    m.onclick = ()=>{ heatmapView = 'match'; renderHeatmap(); renderViewToggle(); };
+    wrap.appendChild(m);
   }
 
   function renderHeatmap(){
     const list = currentHeatList();
     const matrix = countMatrix(list);
     const max = maxOf(matrix);
-    const scopeLabel = heatmapScope==='match' ? 'Match Total' : ('Set ' + heatmapScope.replace('set',''));
-    const rotLabel = heatmapRotation ? ('Rotation ' + heatmapRotation) : 'All Rotations';
-    const title = scopeLabel + ' · ' + rotLabel;
+    const title = heatmapView==='match' ? 'Match Total' : ('Set ' + heatmapView.replace('set',''));
     document.getElementById('heatmapTitle').textContent = title;
 
     const grid = document.getElementById('heatmapGrid');
     grid.innerHTML = '';
     DEPTHS.forEach(d=>{
-      HEATMAP_SEAMS.forEach(sm=>{
+      SEAMS.forEach(sm=>{
         const count = matrix[sm][d];
         const cell = document.createElement('div');
         cell.className = 'cell' + (count===max && count>0 ? ' hot' : '');
@@ -835,17 +551,6 @@
       }
     }
     document.getElementById('statHot').textContent = hotLabel;
-    renderPasserOverlay();
-    renderPasserEditor();
-  }
-  function renderSeamLabels(){
-    const el = document.getElementById('seamLabels');
-    el.innerHTML = '';
-    HEATMAP_SEAMS.forEach(sm=>{
-      const d = document.createElement('div');
-      d.textContent = 'Seam ' + sm;
-      el.appendChild(d);
-    });
   }
 
   // ---------- render: rotation entry ----------
@@ -858,13 +563,7 @@
         sel.appendChild(o);
       });
       sel.dataset.built = '1';
-      sel.onchange = ()=>{
-        const nextSet = parseInt(sel.value,10);
-        if(nextSet === entrySet) return;
-        entrySet = nextSet;
-        renderRotationPanels();
-        renderLog();
-      };
+      sel.onchange = ()=>{ entrySet = parseInt(sel.value,10); renderRotationPanels(); renderLog(); };
     }
     sel.value = entrySet;
   }
@@ -901,9 +600,6 @@
         const s = universalSelection;
         if(!(s.rotation && s.seam && s.depth)) return;
         addServe(s.rotation, s.seam, s.depth);
-        s.seam = null;
-        s.depth = null;
-        updateMasterEntry();
       };
       rotRow.dataset.built = '1';
     }
@@ -957,54 +653,6 @@
     });
   }
 
-  function renderLineupTab(){
-    const sel = document.getElementById('lineupSetSelect');
-    if(!sel.dataset.built){
-      SETS.forEach(n=>{
-        const o = document.createElement('option');
-        o.value = n;
-        o.textContent = 'Set ' + n;
-        sel.appendChild(o);
-      });
-      sel.dataset.built = '1';
-      sel.onchange = ()=>{
-        lineupSet = parseInt(sel.value,10);
-        renderLineupTab();
-      };
-      document.getElementById('lineupSaveBtn').onclick = ()=>{
-        const players = parseLineupInput(document.getElementById('lineupPlayersInput').value);
-        const libero = document.getElementById('lineupLiberoInput').value.trim();
-        setLineup(lineupSet, players, libero);
-        showToast(`Saved lineup for Set ${lineupSet}`);
-      };
-    }
-    sel.value = lineupSet;
-    const players = getLineup(lineupSet);
-    const libero = getLibero(lineupSet);
-    document.getElementById('lineupPlayersInput').value = players.join(', ');
-    document.getElementById('lineupLiberoInput').value = libero;
-    document.getElementById('lineupPreview').textContent = players.length
-      ? `Saved: ${players.join(', ')}${libero ? ` · Libero: ${libero}` : ''}`
-      : `No lineup saved for Set ${lineupSet}`;
-  }
-
-  function savePasserInputs(){
-    const ctx = getPasserContext();
-    if(!ctx) return;
-    const s12 = document.getElementById('passerInput12').value;
-    const s23 = document.getElementById('passerInput23').value;
-    const s34 = document.getElementById('passerInput34').value;
-    setPassers(ctx.setNum, ctx.rotation, {s12, s23, s34});
-  }
-
-  function renderTabs(){
-    const mainActive = activeTab === 'main';
-    document.getElementById('mainTab').classList.toggle('active', mainActive);
-    document.getElementById('lineupTab').classList.toggle('active', !mainActive);
-    document.getElementById('mainTabBtn').classList.toggle('active', mainActive);
-    document.getElementById('lineupTabBtn').classList.toggle('active', !mainActive);
-  }
-
   function renderLog(){
     document.getElementById('logSetLabel').textContent = 'Set ' + entrySet;
     const list = filterServes({set:entrySet}).slice().sort((a,b)=>b.ts-a.ts);
@@ -1044,16 +692,12 @@
   }
 
   function renderAll(){
-    applyTheme();
     document.getElementById('opponentInput').value = state.opponent || '';
-    renderTabs();
-    renderSeamLabels();
-    renderHeatControls();
+    renderViewToggle();
     renderHeatmap();
     renderEntrySetSelect();
     renderMasterEntry();
     renderRotationPanels();
-    renderLineupTab();
     renderLog();
     flashLastAdded();
   }
@@ -1073,7 +717,7 @@
       const max = maxOf(matrix);
       let mini = '';
       DEPTHS.forEach(d=>{
-        HEATMAP_SEAMS.forEach(sm=>{
+        SEAMS.forEach(sm=>{
           const c = matrix[sm][d];
           mini += `<div class="pr-mini-cell" style="background:${heatColor(c,max)};color:${textColorFor(c,max)||'#12203A'}">${c}</div>`;
         });
@@ -1083,7 +727,7 @@
 
     let tableRows = '';
     DEPTHS.forEach(d=>{
-      HEATMAP_SEAMS.forEach(sm=>{
+      SEAMS.forEach(sm=>{
         let rowCells = '';
         views.forEach(v=>{
           const list = v.key==='match' ? state.serves : filterServes({set:parseInt(v.key.replace('set',''),10)});
@@ -1116,20 +760,7 @@
     saveState();
   });
 
-  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-  document.getElementById('undoLastBtn').addEventListener('click', undoLastChange);
   document.getElementById('clearBtn').addEventListener('click', clearAll);
-  document.getElementById('mainTabBtn').addEventListener('click', ()=>{
-    activeTab = 'main';
-    renderTabs();
-  });
-  document.getElementById('lineupTabBtn').addEventListener('click', ()=>{
-    activeTab = 'lineup';
-    renderTabs();
-  });
-  document.getElementById('passerInput12').addEventListener('change', savePasserInputs);
-  document.getElementById('passerInput23').addEventListener('change', savePasserInputs);
-  document.getElementById('passerInput34').addEventListener('change', savePasserInputs);
 
   loadState();
 })();
