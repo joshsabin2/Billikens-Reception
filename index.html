@@ -465,7 +465,7 @@
     </div>
   </main>
 
-  <footer>Data is saved on this device automatically. SLU Blue · Gateway Gold — Go Billikens.</footer>
+<footer>Data is saved on this device automatically.</footer>
 </div>
 
 <div id="printReport"></div>
@@ -792,7 +792,7 @@
     });
     return Array.from(groups.values()).sort((a,b)=>a.rotation-b.rotation || Math.min(...a.sets)-Math.min(...b.sets));
   }
-  function heatMapCardMarkup(rotation, pattern, list, sets, print){
+  function heatMapCardMarkup(title, pattern, list, detail, print){
     const matrix = countMatrix(list), max = maxOf(matrix);
     const prefix = print ? 'pr-map' : 'map';
     let cells = '';
@@ -804,16 +804,30 @@
     const overlayClass = print ? 'pr-map-passer' : 'map-passer';
     const courtClass = print ? 'pr-map-court' : 'map-court';
     const gridClass = print ? 'pr-map-cells' : 'map-grid';
-    const setLabel = Array.from(sets).sort((a,b)=>a-b).map(set=>'Set '+set).join(', ');
-    return `<div class="${prefix}"><h4>Rotation ${rotation}</h4><p>${setLabel} · ${list.length} serve${list.length===1?'':'s'}</p><div class="${courtClass}"><div class="${gridClass}">${cells}</div><div class="${print ? 'pr-map-overlay' : 'map-overlay'}">${patternOverlayMarkup(pattern, overlayClass)}</div></div></div>`;
+    return `<div class="${prefix}"><h4>${title}</h4><p>${detail}</p><div class="${courtClass}"><div class="${gridClass}">${cells}</div><div class="${print ? 'pr-map-overlay' : 'map-overlay'}">${pattern ? patternOverlayMarkup(pattern, overlayClass) : ''}</div></div></div>`;
+  }
+  function heatMapViews(){
+    const views = [];
+    if(state.serves.length){
+      views.push({title:'Match Total', detail:`${state.serves.length} serves · all rotations`, serves:state.serves, pattern:null});
+    }
+    SETS.forEach(set=>{
+      const serves = filterServes({set});
+      if(serves.length) views.push({title:'Set '+set+' Total', detail:`${serves.length} serves · all rotations`, serves, pattern:null});
+    });
+    receptionGroups().forEach(group=>{
+      const sets = Array.from(group.sets).sort((a,b)=>a-b).map(set=>'Set '+set).join(', ');
+      views.push({title:'Rotation '+group.rotation, detail:`${sets} · ${group.serves.length} serve${group.serves.length===1?'':'s'}`, serves:group.serves, pattern:group.pattern});
+    });
+    return views;
   }
   function renderPatternMaps(){
     const section = document.querySelector('#tab-maps section');
     if(!section) return;
-    section.innerHTML = '<div class="panel-title"><h2>Reception Heat Maps</h2></div><p class="hint" style="margin-top:0;">Each map represents one unique reception pattern within a rotation.</p><div class="map-gallery" id="patternMapGallery"></div>';
+    section.innerHTML = '<div class="panel-title"><h2>Reception Heat Maps</h2></div><p class="hint" style="margin-top:0;">Match and set totals are followed by one map for every unique reception pattern within a rotation.</p><div class="map-gallery" id="patternMapGallery"></div>';
     const gallery = document.getElementById('patternMapGallery');
-    const groups = receptionGroups();
-    gallery.innerHTML = groups.length ? groups.map(g=>heatMapCardMarkup(g.rotation,g.pattern,g.serves,g.sets,false)).join('') : '<p class="maps-empty">No serves have been logged yet.</p>';
+    const views = heatMapViews();
+    gallery.innerHTML = views.length ? views.map(v=>heatMapCardMarkup(v.title,v.pattern,v.serves,v.detail,false)).join('') : '<p class="maps-empty">No serves have been logged yet.</p>';
   }
 
   function renderHeatmap(){
@@ -1117,10 +1131,7 @@
     const el = document.getElementById('printReport');
     const opp = state.opponent ? state.opponent : 'Opponent TBD';
     const dateStr = new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
-    const views = receptionGroups().map(group=>({
-      ...group,
-      label:'Rotation '+group.rotation+' / '+Array.from(group.sets).sort((a,b)=>a-b).map(set=>'Set '+set).join(', ')
-    }));
+    const views = heatMapViews();
 
     let cards = '';
     views.forEach(v=>{
@@ -1136,7 +1147,7 @@
           mini += `<div class="pr-mini-cell" style="background:${bg};color:${fg}">${c}</div>`;
         });
       });
-      cards += heatMapCardMarkup(v.rotation, v.pattern, list, v.sets, true);
+      cards += heatMapCardMarkup(v.title, v.pattern, list, v.detail, true);
     });
 
     let tableRows = '';
@@ -1151,7 +1162,7 @@
         tableRows += `<tr><td>Seam ${sm}${DEPTH_LABEL[d]} (${DEPTH_HINT[d]})</td>${rowCells}</tr>`;
       });
     });
-    const headerCells = views.map(v=>`<th>${v.label}</th>`).join('');
+    const headerCells = views.map(v=>`<th>${v.title}</th>`).join('');
 
     el.innerHTML = `
       <p class="pr-title">Serve Tracking Report</p>
