@@ -269,9 +269,12 @@
   /* ---------- reception-pattern map overlay ---------- */
   .heat-pattern-overlay{position:absolute;inset:7px;pointer-events:none;z-index:3;}
   .heat-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:var(--navy);color:var(--white);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25);}
-  .heat-passer.p1{left:75%;}.heat-passer.p2{left:50%;}.heat-passer.p3{left:25%;}
+  .heat-passer.p1{left:76.25%;}.heat-passer.p2{left:50%;}.heat-passer.p3{left:23.75%;}
   .heat-pattern-note{font-size:11px;color:var(--muted);margin:-6px 0 10px;min-height:14px;}
-  .map-gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;}
+  .map-sections{display:flex;flex-direction:column;gap:18px;}
+  .map-section{border:1.5px solid var(--line);border-radius:12px;padding:14px;background:var(--white);}
+  .map-section h3{font-size:16px;color:var(--navy);margin:0 0 10px;}
+  .map-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
   .map-card{border:1px solid var(--line);border-radius:8px;padding:7px;background:var(--paper);min-width:0;}
   .map-card h3{font-size:12px;color:var(--navy);margin:0;white-space:nowrap;}
   .map-card p{font-size:9px;color:var(--muted);margin:0 0 5px;line-height:1.1;}
@@ -280,9 +283,8 @@
   .map-cell{aspect-ratio:1/.78;border:1px solid rgba(0,36,77,.12);border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;color:var(--navy);}
   .map-overlay{position:absolute;inset:6px;pointer-events:none;z-index:2;}
   .map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:17px;height:17px;padding:0 3px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:white;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:7px;}
-  @media (max-width:1100px){.map-gallery{grid-template-columns:repeat(3,minmax(0,1fr));}}
-  @media (max-width:620px){.map-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  .map-passer.p1{left:75%;}.map-passer.p2{left:50%;}.map-passer.p3{left:25%;}
+  @media (max-width:720px){.map-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .map-passer.p1{left:76.25%;}.map-passer.p2{left:50%;}.map-passer.p3{left:23.75%;}
   .maps-empty{color:var(--muted);font-size:14px;padding:10px 0;}
 
   .toast{
@@ -325,7 +327,9 @@
   .pr-map-cell{aspect-ratio:1/.82;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--navy);}
   .pr-map-overlay{position:absolute;inset:4px;pointer-events:none;z-index:2;}
   .pr-map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:18px;height:18px;padding:0 3px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:7px;}
-  .pr-map-passer.p1{left:75%;}.pr-map-passer.p2{left:50%;}.pr-map-passer.p3{left:25%;}
+  .pr-map-passer.p1{left:76.25%;}.pr-map-passer.p2{left:50%;}.pr-map-passer.p3{left:23.75%;}
+  .pr-section{margin-bottom:22px;break-inside:avoid;}
+  .pr-section h3{font-family:'Anton',sans-serif;font-size:17px;color:var(--navy);margin:0 0 8px;}
   table.pr-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;}
   table.pr-table th, table.pr-table td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
   table.pr-table th{background:var(--navy);color:#fff;font-weight:600;}
@@ -809,25 +813,29 @@
   function heatMapViews(){
     const views = [];
     if(state.serves.length){
-      views.push({title:'Match Total', detail:`${state.serves.length} serves · all rotations`, serves:state.serves, pattern:null});
+      views.push({type:'total', title:'Match Total', detail:`${state.serves.length} serves · all rotations`, serves:state.serves, pattern:null});
     }
     SETS.forEach(set=>{
       const serves = filterServes({set});
-      if(serves.length) views.push({title:'Set '+set+' Total', detail:`${serves.length} serves · all rotations`, serves, pattern:null});
+      if(serves.length) views.push({type:'total', title:'Set '+set+' Total', detail:`${serves.length} serves · all rotations`, serves, pattern:null});
     });
     receptionGroups().forEach(group=>{
       const sets = Array.from(group.sets).sort((a,b)=>a-b).map(set=>'Set '+set).join(', ');
-      views.push({title:'Rotation '+group.rotation, detail:`${sets} · ${group.serves.length} serve${group.serves.length===1?'':'s'}`, serves:group.serves, pattern:group.pattern});
+      views.push({type:'pattern', title:'Rotation '+group.rotation, detail:`${sets} · ${group.serves.length} serve${group.serves.length===1?'':'s'}`, serves:group.serves, pattern:group.pattern});
     });
     return views;
   }
   function renderPatternMaps(){
     const section = document.querySelector('#tab-maps section');
     if(!section) return;
-    section.innerHTML = '<div class="panel-title"><h2>Reception Heat Maps</h2></div><p class="hint" style="margin-top:0;">Match and set totals are followed by one map for every unique reception pattern within a rotation.</p><div class="map-gallery" id="patternMapGallery"></div>';
-    const gallery = document.getElementById('patternMapGallery');
+    section.innerHTML = '<div class="panel-title"><h2>Reception Heat Maps</h2></div><p class="hint" style="margin-top:0;">Match and set totals are separated from the unique reception-pattern maps.</p><div class="map-sections"><div class="map-section"><h3>Match &amp; Set Totals</h3><div class="map-gallery" id="totalHeatMapGallery"></div></div><div class="map-section"><h3>Reception Pattern &amp; Rotation</h3><div class="map-gallery" id="patternMapGallery"></div></div></div>';
+    const totalGallery = document.getElementById('totalHeatMapGallery');
+    const patternGallery = document.getElementById('patternMapGallery');
     const views = heatMapViews();
-    gallery.innerHTML = views.length ? views.map(v=>heatMapCardMarkup(v.title,v.pattern,v.serves,v.detail,false)).join('') : '<p class="maps-empty">No serves have been logged yet.</p>';
+    const totals = views.filter(v=>v.type==='total');
+    const patterns = views.filter(v=>v.type==='pattern');
+    totalGallery.innerHTML = totals.length ? totals.map(v=>heatMapCardMarkup(v.title,v.pattern,v.serves,v.detail,false)).join('') : '<p class="maps-empty">No serves have been logged yet.</p>';
+    patternGallery.innerHTML = patterns.length ? patterns.map(v=>heatMapCardMarkup(v.title,v.pattern,v.serves,v.detail,false)).join('') : '<p class="maps-empty">No reception patterns have serves logged yet.</p>';
   }
 
   function renderHeatmap(){
@@ -1133,7 +1141,8 @@
     const dateStr = new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
     const views = heatMapViews();
 
-    let cards = '';
+    let totalCards = '';
+    let patternCards = '';
     views.forEach(v=>{
       const list = v.serves;
       const matrix = countMatrix(list);
@@ -1147,7 +1156,9 @@
           mini += `<div class="pr-mini-cell" style="background:${bg};color:${fg}">${c}</div>`;
         });
       });
-      cards += heatMapCardMarkup(v.title, v.pattern, list, v.detail, true);
+      const card = heatMapCardMarkup(v.title, v.pattern, list, v.detail, true);
+      if(v.type === 'total') totalCards += card;
+      else patternCards += card;
     });
 
     let tableRows = '';
@@ -1167,7 +1178,8 @@
     el.innerHTML = `
       <p class="pr-title">Serve Tracking Report</p>
       <p class="pr-sub">SLU Volleyball vs ${opp} — generated ${dateStr}</p>
-      <div class="pr-grid">${cards}</div>
+      <section class="pr-section"><h3>Match &amp; Set Totals</h3><div class="pr-grid">${totalCards}</div></section>
+      <section class="pr-section"><h3>Reception Pattern &amp; Rotation</h3><div class="pr-grid">${patternCards}</div></section>
       <table class="pr-table">
         <thead><tr><th>Zone</th>${headerCells}</tr></thead>
         <tbody>${tableRows}</tbody>
