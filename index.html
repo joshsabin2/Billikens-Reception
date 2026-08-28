@@ -19,7 +19,24 @@
     --white:#FFFFFF;
     --heat-0:#EDF0F4;
     --line:#D8DBDD;
+    --court-floor:#F6F3EC;
+    --muted:#63697A;
+    --muted-faint:#B7BFC9;
+    --danger:#B04A4A;
     --radius:10px;
+  }
+  body[data-theme="dark"]{
+    --ink:#EDF0F5;
+    --paper:#0B1220;
+    --white:#141C2C;
+    --line:#2E3A52;
+    --heat-0:#1C2740;
+    --court-floor:#101828;
+    --gray:#3A465E;
+    --bronze:#E0B77D;
+    --muted:#A7B2C8;
+    --muted-faint:#5F6C87;
+    --danger:#E88686;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -28,6 +45,7 @@
     color:var(--ink);
     font-family:'Barlow Semi Condensed', sans-serif;
     -webkit-font-smoothing:antialiased;
+    transition:background .2s ease, color .2s ease;
   }
   h1,h2,h3,.display{
     font-family:'Anton', sans-serif;
@@ -42,7 +60,7 @@
   header{
     background:linear-gradient(135deg,var(--navy),#001630);
     color:var(--white);
-    padding:18px 28px;
+    padding:16px 28px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -51,36 +69,51 @@
     border-bottom:4px solid var(--gold);
   }
   .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
-  .brand .display{font-size:28px;line-height:1;color:var(--white);}
-  .brand .sub{font-size:14px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:600;}
-  .header-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .brand .display{font-size:26px;line-height:1;color:var(--white);}
+  .brand .sub{font-size:13px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:600;}
+  .header-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
   .opp-field{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 8px 6px 16px;}
-  .opp-field span{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);}
+  .opp-field span{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.65);}
   .opp-field input{
     background:transparent;border:none;color:var(--white);font-family:'Barlow Semi Condensed',sans-serif;
-    font-size:16px;font-weight:600;padding:6px 8px;width:180px;outline:none;
+    font-size:16px;font-weight:600;padding:6px 8px;width:160px;outline:none;
   }
   .opp-field input::placeholder{color:rgba(255,255,255,.5);}
   .btn{
-    border:none;border-radius:999px;padding:10px 20px;font-size:14px;font-weight:700;letter-spacing:.08em;
+    border:none;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:700;letter-spacing:.07em;
     text-transform:uppercase;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;
+    -webkit-tap-highlight-color:transparent;
   }
   .btn:active{transform:scale(.96);}
   .btn-gold{background:var(--gold);color:var(--navy);}
   .btn-gold:hover{box-shadow:0 4px 14px rgba(255,199,44,.45);}
-  .btn-ghost{background:transparent;color:var(--gray);border:1px solid rgba(255,255,255,.3);}
+  .btn-ghost{background:transparent;color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.3);}
   .btn-ghost:hover{color:var(--white);border-color:var(--white);}
+  .btn-icon{background:rgba(255,255,255,.1);color:var(--white);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:10px 14px;font-size:15px;cursor:pointer;}
+
+  /* ---------- tab nav ---------- */
+  .tabnav{
+    display:flex;gap:6px;padding:12px 28px;background:var(--white);border-bottom:1px solid var(--line);
+    flex-wrap:wrap;position:sticky;top:0;z-index:20;
+  }
+  .tab-btn{
+    border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;
+    padding:9px 18px;font-size:13.5px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.12s ease;
+  }
+  .tab-btn.active{background:var(--navy);border-color:var(--navy);color:var(--white);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
 
   /* ---------- layout ---------- */
-  main{
+  main{padding:24px 28px 60px;}
+  .track-grid{
     display:grid;
     grid-template-columns:1fr minmax(340px,460px);
     gap:22px;
-    padding:24px 28px 60px;
     align-items:start;
   }
   @media (max-width:1000px){
-    main{grid-template-columns:1fr;}
+    .track-grid{grid-template-columns:1fr;}
     .heatmap-panel{position:static;}
   }
   .panel{
@@ -89,28 +122,27 @@
     box-shadow:0 1px 3px rgba(0,36,77,.08), 0 8px 24px rgba(0,36,77,.06);
     padding:22px;
   }
-  .panel-title{
-    display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;
-  }
+  body[data-theme="dark"] .panel{box-shadow:0 1px 3px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);}
+  .panel + .panel{margin-top:22px;}
+  .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
   .panel-title h2{font-size:20px;color:var(--navy);margin:0;}
-  .eyebrow{
-    font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);font-weight:700;margin:0 0 4px;
+  body[data-theme="dark"] .panel-title h2{color:var(--gold);}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);font-weight:700;margin:0 0 4px;}
+
+  select{
+    font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:14.5px;color:var(--ink);
+    border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--white);cursor:pointer;
   }
 
   /* ---------- heat map panel ---------- */
-  .heatmap-panel{position:sticky;top:20px;}
-  .view-toggle{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
-  .pill{
-    border:1.5px solid var(--line);background:var(--white);color:var(--navy);
-    border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;letter-spacing:.04em;
-    cursor:pointer;transition:.12s ease;
-  }
-  .pill:hover{border-color:var(--blue);}
-  .pill.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
-  .pill.match-pill.active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+  .heatmap-panel{position:sticky;top:76px;}
+  .heat-filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .heat-filters .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+  .heat-filters label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;}
+  .heat-filters select{width:100%;}
 
   .court-wrap{display:flex;gap:10px;}
-  .depth-labels{display:flex;flex-direction:column;justify-content:space-between;padding:34px 0 6px;}
+  .depth-labels{display:flex;flex-direction:column;justify-content:space-around;padding:38px 0 10px;}
   .depth-labels div{
     font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);font-weight:700;
     writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
@@ -118,134 +150,171 @@
   .court{flex:1;}
   .seam-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;}
   .seam-labels div{text-align:center;font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.06em;}
+  body[data-theme="dark"] .seam-labels div{color:var(--gold);}
+
+  .net-wrap{position:relative;padding:0 3px;margin-bottom:2px;}
   .net{
-    height:12px;border-radius:3px;margin-bottom:6px;
+    height:13px;border-radius:2px;position:relative;
     background:
-      repeating-linear-gradient(90deg, rgba(0,36,77,.55) 0 1.5px, transparent 1.5px 8px),
-      linear-gradient(var(--gray),var(--gray));
-    border:1px solid var(--navy);
+      repeating-linear-gradient(90deg, rgba(0,36,77,.5) 0 1.5px, transparent 1.5px 8px),
+      repeating-linear-gradient(0deg, rgba(0,36,77,.5) 0 1.5px, transparent 1.5px 7px),
+      linear-gradient(var(--white),var(--white));
+    border:1px solid var(--navy);border-bottom:3px solid var(--navy);
   }
-  .grid4x3{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;}
-  .cell{
-    aspect-ratio:1/.82;
-    border-radius:8px;
-    display:flex;align-items:center;justify-content:center;
+  .net-wrap::before, .net-wrap::after{
+    content:"";position:absolute;top:-11px;width:3px;height:24px;background:var(--gold);border-radius:1px;
+    box-shadow:0 0 0 1px var(--navy);
+  }
+  .net-wrap::before{left:1px;}
+  .net-wrap::after{right:1px;}
+
+  .court-surface{
     position:relative;
-    border:1px solid var(--line);
-    transition:transform .1s ease;
+    background:var(--court-floor);
+    border-left:4px solid var(--navy);
+    border-right:4px solid var(--navy);
+    border-bottom:6px solid var(--navy);
+    border-radius:0 0 8px 8px;
+    padding:7px;
+  }
+  .attack-line{position:absolute;left:7px;right:7px;top:calc(33.333% - 1px);border-top:2px dashed rgba(0,36,77,.4);pointer-events:none;}
+  .attack-line .lbl{
+    position:absolute;right:2px;top:-8px;font-size:8.5px;font-weight:700;letter-spacing:.04em;
+    color:var(--bronze);background:var(--court-floor);padding:0 4px;text-transform:uppercase;
+  }
+  .grid4x3{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;position:relative;}
+  .cell{
+    aspect-ratio:1/.82;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    position:relative;border:1px solid rgba(0,36,77,.12);transition:transform .1s ease;
   }
   .cell .count{font-family:'Anton',sans-serif;font-size:22px;color:var(--navy);}
-  .cell .count.zero{color:#B7BFC9;font-size:16px;}
+  .cell .count.zero{color:var(--muted-faint);font-size:16px;}
   .cell.hot{outline:2.5px solid var(--gold);outline-offset:-2.5px;}
-  .cell.hot::after{
-    content:"★";position:absolute;top:3px;right:5px;font-size:10px;color:var(--gold);
-  }
-  .legend{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:12px;color:#5A6472;}
+  .cell.hot::after{content:"★";position:absolute;top:3px;right:5px;font-size:10px;color:var(--gold);}
+  .legend{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:12px;color:var(--muted);}
   .legend .bar{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--heat-0),var(--blue));}
   .stat-row{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;}
   .stat{background:var(--paper);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;}
   .stat .n{font-family:'Anton',sans-serif;font-size:26px;color:var(--blue);line-height:1;}
-  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#69707C;margin-top:4px;}
+  body[data-theme="dark"] .stat .n{color:var(--gold);}
+  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:4px;}
 
   /* ---------- entry panel ---------- */
   .entry-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
   .set-select-wrap{display:flex;align-items:center;gap:10px;}
   .set-select-wrap label{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;}
-  select{
-    font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--navy);
-    border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--white);cursor:pointer;
-  }
-  .hint{font-size:12.5px;color:#7A8290;margin:6px 0 18px;}
-
-  .rotation-grid{
-    display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;
-  }
-  @media (max-width:1000px){ .rotation-grid{grid-template-columns:repeat(3,1fr);} }
-  @media (max-width:720px){ .rotation-grid{grid-template-columns:repeat(2,1fr);} }
-  @media (max-width:480px){ .rotation-grid{grid-template-columns:1fr;} }
-  .rotation-card{
-    border:1.5px solid var(--line);border-radius:12px;padding:14px;background:#FBFBFA;
-  }
-  .rotation-card .rc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-  .rotation-card .rc-head .rname{font-family:'Anton',sans-serif;font-size:17px;color:var(--navy);}
-  .rotation-card .rc-head .rtotal{font-size:12px;color:var(--bronze);font-weight:700;}
-  .undo-btn{
-    background:none;border:none;color:#9AA1AC;font-size:12px;cursor:pointer;text-decoration:underline;
-    padding:8px 0 0;display:inline-block;
-  }
-  .undo-btn:hover{color:var(--blue);}
+  body[data-theme="dark"] .set-select-wrap label{color:var(--gold);}
+  .hint{font-size:12.5px;color:var(--muted);margin:6px 0 18px;}
 
   .master-entry{
-    background:linear-gradient(180deg,#FBFBFA,#F3F4F2);
-    border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 18px;margin-bottom:22px;
+    background:linear-gradient(180deg, var(--white), var(--paper));
+    border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 18px;margin-bottom:18px;
   }
-  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:#8A919C;font-weight:700;margin:0 0 5px;}
-  .rotation-btn{
-    flex:1;min-height:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
-    font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);cursor:pointer;
-    display:flex;align-items:center;justify-content:center;transition:.1s ease;-webkit-tap-highlight-color:transparent;
-  }
-  .rotation-btn:active{transform:scale(.95);}
-  .rotation-btn.active{background:var(--navy);border-color:var(--navy);color:var(--white);}
-  .master-entry .submit-btn{margin-top:4px;min-height:60px;font-size:18px;}
-  .master-entry .last-logged{text-align:center;}
+  .master-entry-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:0 0 5px;}
   .selector-row{display:flex;gap:6px;margin-bottom:10px;}
-  .seam-btn, .depth-btn{
-    flex:1;min-height:56px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
-    font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);cursor:pointer;
+  .seam-btn, .depth-btn, .rotation-btn{
+    flex:1;min-height:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
+    font-family:'Anton',sans-serif;font-size:16px;color:var(--ink);cursor:pointer;
     display:flex;align-items:center;justify-content:center;transition:.1s ease;-webkit-tap-highlight-color:transparent;
   }
   .depth-btn{flex-direction:column;gap:2px;line-height:1;}
   .depth-btn .letter{font-family:'Anton',sans-serif;font-size:18px;}
   .depth-btn .hint-word{font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em;opacity:.7;}
-  .depth-btn.active .hint-word{opacity:.85;}
-  .seam-btn:active, .depth-btn:active{transform:scale(.95);}
-  .seam-btn.active, .depth-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .seam-btn:active, .depth-btn:active, .rotation-btn:active{transform:scale(.95);}
+  .seam-btn.active, .depth-btn.active, .rotation-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .rotation-btn.active{background:var(--navy);border-color:var(--navy);}
+  .master-entry .submit-btn{margin-top:4px;min-height:56px;font-size:18px;}
   .submit-btn{
-    width:100%;min-height:56px;border-radius:10px;border:none;background:var(--gold);color:var(--navy);
+    width:100%;border-radius:10px;border:none;background:var(--gold);color:var(--navy);
     font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
-    transition:.12s ease;-webkit-tap-highlight-color:transparent;
+    min-height:52px;transition:.12s ease;-webkit-tap-highlight-color:transparent;
   }
   .submit-btn:active{transform:scale(.97);}
   .submit-btn:disabled{background:#E7E9EA;color:#AEB4BC;cursor:not-allowed;}
+  body[data-theme="dark"] .submit-btn:disabled{background:#232D42;color:#5F6B85;}
   .submit-btn.logged{background:#2E9E5B;color:var(--white);}
-  .last-logged{font-size:12px;color:#7A8290;margin-top:8px;min-height:16px;}
+  .last-logged{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;text-align:center;}
+  .undo-row{display:flex;justify-content:center;margin-top:6px;}
+  .undo-global-btn{
+    background:none;border:1.5px solid var(--line);color:var(--ink);font-size:12.5px;font-weight:700;
+    border-radius:999px;padding:8px 16px;cursor:pointer;letter-spacing:.03em;
+  }
+  .undo-global-btn:hover{border-color:var(--danger);color:var(--danger);}
+  .undo-global-btn:disabled{opacity:.4;cursor:not-allowed;}
 
-  .log-section{border-top:1px solid var(--line);padding-top:16px;}
-  .log-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
-  .log-empty{color:#9AA1AC;font-size:14px;padding:10px 0;}
-  .log-row{
-    display:flex;align-items:center;justify-content:space-between;background:var(--paper);
-    border-radius:8px;padding:8px 12px;font-size:13.5px;
+  /* ---------- reception pattern ---------- */
+  .pattern-card{border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:18px;background:var(--court-floor);}
+  .pattern-track{position:relative;height:64px;margin:8px 10px 4px;}
+  .pattern-seamline{position:absolute;top:50%;left:0;right:0;border-top:2px dashed rgba(0,36,77,.3);}
+  .passer-wrap{position:absolute;top:50%;width:52px;height:52px;transform:translate(-50%,-50%);}
+  .passer-wrap:nth-child(2){left:25%;}
+  .passer-wrap:nth-child(3){left:50%;}
+  .passer-wrap:nth-child(4){left:75%;}
+  .passer-circle{
+    width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--white);
+    display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:16px;
+    border:3px solid var(--gold);position:relative;pointer-events:none;
   }
-  .log-row .tag{
-    display:inline-block;background:var(--blue);color:var(--white);font-weight:700;font-size:11px;
-    border-radius:4px;padding:2px 6px;margin-right:8px;
+  .passer-circle.empty{background:var(--white);color:var(--muted-faint);border-color:var(--line);}
+  .passer-select{
+    position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;
   }
-  .log-row button{
-    background:none;border:none;color:#B04A4A;font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;
+  .pattern-seam-tags{display:grid;grid-template-columns:repeat(4,1fr);margin-top:2px;}
+  .pattern-seam-tags div{text-align:center;font-size:10px;color:var(--bronze);font-weight:700;letter-spacing:.06em;}
+  .pattern-empty-msg{font-size:13px;color:var(--muted);text-align:center;padding:10px 0;}
+
+  .rotation-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media (max-width:1000px){ .rotation-grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:720px){ .rotation-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){ .rotation-grid{grid-template-columns:1fr;} }
+  .rotation-card{border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--paper);}
+  .rotation-card .rc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .rotation-card .rc-head .rname{font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);}
+  body[data-theme="dark"] .rotation-card .rc-head .rname{color:var(--gold);}
+  .rotation-card .rc-head .rtotal{font-size:12px;color:var(--bronze);font-weight:700;}
+  .undo-btn{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;padding:6px 0 0;}
+  .undo-btn:hover{color:var(--blue);}
+  .undo-btn:disabled{opacity:.4;cursor:not-allowed;text-decoration:none;}
+
+  /* ---------- lineup tab ---------- */
+  .roster-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .roster-row input[type="text"]{
+    flex:1;max-width:160px;border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;font-size:15px;
+    font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--ink);background:var(--white);
   }
-  .log-row button:hover{color:#7d2f2f;}
+  .roster-row label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);}
+  .roster-row .del-btn{margin-left:auto;background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;}
+  .add-player-btn{margin-top:14px;}
+
+  /* ---------- log tab ---------- */
+  .log-list{display:flex;flex-direction:column;gap:6px;}
+  .log-empty{color:var(--muted);font-size:14px;padding:10px 0;}
+  .log-row{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-radius:8px;padding:8px 12px;font-size:13.5px;}
+  .log-row .tag{display:inline-block;background:var(--blue);color:var(--white);font-weight:700;font-size:11px;border-radius:4px;padding:2px 6px;margin-right:8px;}
+  .log-row button{background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;}
+  .log-row button:hover{filter:brightness(0.85);}
 
   .toast{
     position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);
     background:var(--navy);color:var(--white);padding:10px 20px;border-radius:999px;font-size:13px;
     font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
-    box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:50;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:50;max-width:80vw;text-align:center;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  footer{
-    text-align:center;color:#98A0AB;font-size:12px;padding:10px 0 30px;
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 0 30px;}
+
+  .seam-btn:focus-visible, .depth-btn:focus-visible, .rotation-btn:focus-visible, .submit-btn:focus-visible, .cell:focus-visible, .tab-btn:focus-visible{
+    outline:2px solid var(--blue);outline-offset:2px;
   }
 
   /* ---------- print / PDF export ---------- */
   #printReport{display:none;}
   @media print{
-    header .header-controls, .btn-ghost, .undo-btn, .log-row button{cursor:default;}
-    body{background:var(--white);}
     .screen-only{display:none !important;}
     #printReport{display:block !important;padding:20px;}
+    body{background:#fff;color:#12203A;}
   }
   .pr-title{font-family:'Anton',sans-serif;font-size:26px;color:var(--navy);margin:0 0 2px;}
   .pr-sub{font-size:14px;color:#555;margin:0 0 20px;}
@@ -257,7 +326,7 @@
   .pr-mini-cell{aspect-ratio:1/.85;border:1px solid var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);}
   table.pr-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;}
   table.pr-table th, table.pr-table td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
-  table.pr-table th{background:var(--navy);color:var(--white);font-weight:600;}
+  table.pr-table th{background:var(--navy);color:#fff;font-weight:600;}
   table.pr-table td:first-child, table.pr-table th:first-child{text-align:left;}
 </style>
 </head>
@@ -274,81 +343,126 @@
         <span>vs</span>
         <input id="opponentInput" type="text" placeholder="Opponent name" />
       </div>
-      <button class="btn btn-ghost" id="clearBtn" type="button">Reset Data</button>
+      <button class="btn-icon" id="darkToggle" type="button" title="Toggle dark mode">🌙</button>
+      <button class="btn btn-ghost" id="clearBtn" type="button">New Match</button>
       <button class="btn btn-gold" id="exportBtn" type="button">Export PDF</button>
     </div>
   </header>
 
+  <nav class="tabnav">
+    <button class="tab-btn active" data-tab="track" type="button">Track</button>
+    <button class="tab-btn" data-tab="lineup" type="button">Lineup &amp; Subs</button>
+    <button class="tab-btn" data-tab="log" type="button">Serve Log</button>
+  </nav>
+
   <main>
-    <!-- LEFT: ENTRY -->
-    <section class="panel entry-panel">
-      <div class="entry-header">
-        <div>
-          <p class="eyebrow">Log serves</p>
-          <h2 style="margin:0;color:var(--navy);font-size:20px;">By Rotation</h2>
-        </div>
-        <div class="set-select-wrap">
-          <label for="entrySetSelect">Recording for</label>
-          <select id="entrySetSelect"></select>
-        </div>
+    <!-- TRACK TAB -->
+    <div class="tab-panel active" id="tab-track">
+      <div class="track-grid">
+        <!-- LEFT: ENTRY -->
+        <section class="panel entry-panel">
+          <div class="entry-header">
+            <div>
+              <p class="eyebrow">Log serves</p>
+              <h2 style="margin:0;color:var(--navy);font-size:20px;">By Rotation</h2>
+            </div>
+            <div class="set-select-wrap">
+              <label for="entrySetSelect">Recording for</label>
+              <select id="entrySetSelect"></select>
+            </div>
+          </div>
+          <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. The rotation stays selected for the next serve — seam and depth clear so you don't log the same spot twice by accident.</p>
+
+          <div class="master-entry">
+            <p class="selector-label">Rotation</p>
+            <div class="selector-row" id="rotationRow"></div>
+            <p class="selector-label">Seam</p>
+            <div class="selector-row" id="seamRow"></div>
+            <p class="selector-label">Depth</p>
+            <div class="selector-row" id="depthRow"></div>
+            <button class="submit-btn" id="universalEnter" type="button" disabled>Enter</button>
+            <div class="last-logged" id="universalLast"></div>
+            <div class="undo-row">
+              <button class="undo-global-btn" id="globalUndoBtn" type="button" disabled>↺ Undo Last Serve</button>
+            </div>
+          </div>
+
+          <div class="pattern-card">
+            <p class="eyebrow" style="margin-bottom:2px;">Reception pattern</p>
+            <h2 style="margin:0 0 2px;color:var(--navy);font-size:16px;" id="patternTitle">Select a rotation above</h2>
+            <p class="hint" style="margin:2px 0 0;">Tap a circle to assign the passer standing in that seam gap.</p>
+            <div id="patternBody"></div>
+          </div>
+
+          <p class="selector-label">Rotation totals — <span id="rotTotalsSetLabel">Set 1</span></p>
+          <div class="rotation-grid" id="rotationGrid"></div>
+        </section>
+
+        <!-- RIGHT: HEAT MAP -->
+        <section class="panel heatmap-panel">
+          <p class="eyebrow">Where we're being served</p>
+          <div class="panel-title"><h2 id="heatmapTitle">Match Total</h2></div>
+
+          <div class="heat-filters">
+            <div class="field">
+              <label for="heatmapViewSelect">Set / Match</label>
+              <select id="heatmapViewSelect"></select>
+            </div>
+            <div class="field">
+              <label for="heatmapRotationSelect">Rotation</label>
+              <select id="heatmapRotationSelect"></select>
+            </div>
+          </div>
+
+          <div class="court-wrap">
+            <div class="depth-labels"><div>A · Short</div><div>B · Medium</div><div>C · Deep</div></div>
+            <div class="court">
+              <div class="seam-labels" id="heatSeamLabels"></div>
+              <div class="net-wrap"><div class="net"></div></div>
+              <div class="court-surface">
+                <div class="attack-line"><span class="lbl">Attack line</span></div>
+                <div class="grid4x3" id="heatmapGrid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="legend"><span>Fewer</span><div class="bar"></div><span>More</span></div>
+
+          <div class="stat-row">
+            <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Serves shown</div></div>
+            <div class="stat"><div class="n" id="statHot">—</div><div class="l">Hot zone</div></div>
+          </div>
+        </section>
       </div>
-      <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. Your picks stay selected so back-to-back serves to the same spot are a quick double-tap — just switch the rotation whenever you rotate.</p>
+    </div>
 
-      <div class="master-entry">
-        <p class="selector-label">Rotation</p>
-        <div class="selector-row rotation-row" id="rotationRow"></div>
-        <p class="selector-label">Seam</p>
-        <div class="selector-row seam-row" id="seamRow"></div>
-        <p class="selector-label">Depth</p>
-        <div class="selector-row depth-row" id="depthRow"></div>
-        <button class="submit-btn" id="universalEnter" type="button" disabled>Enter</button>
-        <div class="last-logged" id="universalLast"></div>
-      </div>
+    <!-- LINEUP TAB -->
+    <div class="tab-panel" id="tab-lineup">
+      <section class="panel">
+        <p class="eyebrow">Roster</p>
+        <h2 style="margin:0 0 6px;color:var(--navy);font-size:20px;">Lineup &amp; Subs</h2>
+        <p class="hint" style="margin-top:0;">Add every player who might see the court — starters, libero, and subs. Use initials or jersey numbers. These names populate the reception-pattern dropdowns on the Track tab; swapping a name into a spot there is how you record a substitution for that rotation.</p>
+        <div id="rosterList"></div>
+        <button class="btn btn-gold add-player-btn" id="addPlayerBtn" type="button">+ Add Player</button>
+      </section>
+    </div>
 
-      <p class="selector-label" style="margin-top:22px;">Rotation totals — <span id="rotTotalsSetLabel">Set 1</span></p>
-      <div class="rotation-grid" id="rotationGrid"></div>
-
-      <div class="log-section">
-        <div class="panel-title" style="margin-bottom:10px;">
-          <h2 style="font-size:16px;">Recent Serves — <span id="logSetLabel">Set 1</span></h2>
+    <!-- LOG TAB -->
+    <div class="tab-panel" id="tab-log">
+      <section class="panel">
+        <div class="panel-title">
+          <h2>Serve Log — <span id="logSetLabel2">Set 1</span></h2>
+          <div class="set-select-wrap">
+            <label for="logSetSelect">Set</label>
+            <select id="logSetSelect"></select>
+          </div>
         </div>
         <div class="log-list" id="logList"></div>
-      </div>
-    </section>
-
-    <!-- RIGHT: HEAT MAP -->
-    <section class="panel heatmap-panel">
-      <p class="eyebrow">Where we're being served</p>
-      <div class="panel-title">
-        <h2 id="heatmapTitle">Match Total</h2>
-      </div>
-      <div class="view-toggle" id="viewToggle"></div>
-
-      <div class="court-wrap">
-        <div class="depth-labels"><div>A · Short</div><div>B · Medium</div><div>C · Deep</div></div>
-        <div class="court">
-          <div class="seam-labels">
-            <div>Seam 1</div><div>Seam 2</div><div>Seam 3</div><div>Seam 4</div>
-          </div>
-          <div class="net"></div>
-          <div class="grid4x3" id="heatmapGrid"></div>
-        </div>
-      </div>
-
-      <div class="legend">
-        <span>Fewer</span>
-        <div class="bar"></div>
-        <span>More</span>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Serves shown</div></div>
-        <div class="stat"><div class="n" id="statHot">—</div><div class="l">Hot zone</div></div>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
 
-  <footer>Data is saved to your device automatically. SLU Blue · Gateway Gold — Go Billikens.</footer>
+  <footer>Data is saved on this device automatically. SLU Blue · Gateway Gold — Go Billikens.</footer>
 </div>
 
 <div id="printReport"></div>
@@ -357,18 +471,58 @@
 <script>
 (function(){
   const SEAMS = [1,2,3,4];
+  const SEAMS_HEAT_ORDER = [4,3,2,1];
   const DEPTHS = ['a','b','c'];
   const DEPTH_LABEL = {a:'A', b:'B', c:'C'};
   const DEPTH_HINT = {a:'Short', b:'Medium', c:'Deep'};
   const SETS = [1,2,3,4,5];
   const ROTATIONS = [1,2,3,4,5,6];
+  const PASSER_SLOTS = ['p1','p2','p3'];
+  const PASSER_SLOT_LABEL = {p1:'Between Seam 1–2', p2:'Between Seam 2–3', p3:'Between Seam 3–4'};
   const STORAGE_KEY = 'serve-tracker-state';
 
-  let state = { opponent:'', serves:[] };
+  let state = { opponent:'', serves:[], roster:[], patterns:{} };
   let entrySet = 1;
   let heatmapView = 'match'; // 'set1'..'set5' or 'match'
-  let lastAdded = null; // {rotation, seam, depth} — used to trigger the click-feedback flash
-  const universalSelection = {rotation:null, seam:null, depth:null}; // shared picker state for the one Enter button
+  let heatmapRotationFilter = 'all'; // 'all' or a rotation number
+  let lastAdded = null;
+  const universalSelection = {rotation:null, seam:null, depth:null};
+  let darkMode = false;
+
+  function defaultRoster(){
+    return [
+      {id:'p1', label:'1', isLibero:false},
+      {id:'p2', label:'2', isLibero:false},
+      {id:'p3', label:'3', isLibero:false},
+      {id:'p4', label:'4', isLibero:false},
+      {id:'p5', label:'5', isLibero:false},
+      {id:'p6', label:'6', isLibero:false},
+      {id:'lib', label:'L', isLibero:true}
+    ];
+  }
+
+  function ensurePatternStructure(set){
+    if(!state.patterns[set]) state.patterns[set] = {};
+    ROTATIONS.forEach(r=>{
+      if(!state.patterns[set][r]) state.patterns[set][r] = {p1:null,p2:null,p3:null};
+    });
+  }
+
+  function copyForwardPatterns(newSet){
+    ensurePatternStructure(newSet);
+    for(let s = newSet-1; s>=1; s--){
+      if(state.patterns[s]){
+        const hasData = ROTATIONS.some(r=> state.patterns[s][r] && (state.patterns[s][r].p1 || state.patterns[s][r].p2 || state.patterns[s][r].p3));
+        if(hasData){
+          ROTATIONS.forEach(r=>{
+            state.patterns[newSet][r] = Object.assign({}, state.patterns[s][r]);
+          });
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   // ---------- persistence ----------
   function hasClaudeStorage(){
@@ -382,6 +536,8 @@
         const parsed = JSON.parse(raw);
         if(parsed && Array.isArray(parsed.serves)){ state = parsed; loaded = true; }
       }
+      const dm = localStorage.getItem(STORAGE_KEY + '-dark');
+      if(dm !== null) darkMode = dm === '1';
     }catch(e){ console.error('Local storage read failed', e); }
 
     if(!loaded && hasClaudeStorage()){
@@ -393,6 +549,12 @@
         }
       }catch(e){ /* nothing saved there either */ }
     }
+
+    if(!Array.isArray(state.roster) || state.roster.length===0) state.roster = defaultRoster();
+    if(!state.patterns) state.patterns = {};
+    ensurePatternStructure(entrySet);
+
+    applyTheme();
     renderAll();
   }
   async function saveState(){
@@ -406,6 +568,9 @@
       try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }
       catch(e){ /* secondary mirror only, ok to ignore */ }
     }
+  }
+  function saveDarkPref(){
+    try{ localStorage.setItem(STORAGE_KEY + '-dark', darkMode ? '1' : '0'); }catch(e){}
   }
 
   // ---------- helpers ----------
@@ -425,13 +590,11 @@
     list.forEach(s=>{ if(m[s.seam] && m[s.seam][s.depth]!==undefined) m[s.seam][s.depth]++; });
     return m;
   }
-
   function maxOf(matrix){
     let mx = 0;
     SEAMS.forEach(sm=> DEPTHS.forEach(d=> { if(matrix[sm][d] > mx) mx = matrix[sm][d]; }));
     return mx;
   }
-
   function hexLerp(c1, c2, t){
     const a = parseInt(c1.slice(1),16), b = parseInt(c2.slice(1),16);
     const ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
@@ -439,15 +602,29 @@
     const r = Math.round(ar+(br-ar)*t), g = Math.round(ag+(bg-ag)*t), bl = Math.round(ab+(bb-ab)*t);
     return `rgb(${r},${g},${bl})`;
   }
-  function heatColor(count, max){
-    if(count===0) return 'var(--heat-0)';
+  function heatColorFixed(count, max, dark){
+    if(count===0) return dark ? '#1C2740' : '#E8EDF5';
     const t = max>0 ? count/max : 0;
-    return hexLerp('#E8EDF5','#003DA5', Math.min(1, 0.28 + t*0.72));
+    const lo = dark ? '#1C2740' : '#E8EDF5';
+    const hi = dark ? '#3D7BFF' : '#003DA5';
+    return hexLerp(lo, hi, Math.min(1, 0.28 + t*0.72));
   }
+  function heatColor(count, max){ return heatColorFixed(count, max, darkMode); }
   function textColorFor(count, max){
-    if(count===0) return null;
+    // on-screen: null for zero-count lets the CSS ".count.zero" muted style show through
+    if(count===0) return darkMode ? '#5B6A88' : null;
     const t = max>0 ? count/max : 0;
-    return t > 0.55 ? '#FFFFFF' : 'var(--navy)';
+    return t > 0.55 ? '#FFFFFF' : (darkMode ? '#EDF0F5' : 'var(--navy)');
+  }
+  function playerLabel(id){
+    if(!id) return null;
+    const p = state.roster.find(x=>x.id===id);
+    return p ? p.label + (p.isLibero ? ' (L)' : '') : null;
+  }
+  function playerShort(id){
+    if(!id) return '';
+    const p = state.roster.find(x=>x.id===id);
+    return p ? p.label : '';
   }
 
   function showToast(msg){
@@ -455,7 +632,28 @@
     t.textContent = msg;
     t.classList.add('show');
     clearTimeout(showToast._h);
-    showToast._h = setTimeout(()=> t.classList.remove('show'), 1600);
+    showToast._h = setTimeout(()=> t.classList.remove('show'), 2000);
+  }
+
+  // ---------- theme ----------
+  function applyTheme(){
+    document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    document.getElementById('darkToggle').textContent = darkMode ? '☀️' : '🌙';
+  }
+  document.getElementById('darkToggle').addEventListener('click', ()=>{
+    darkMode = !darkMode;
+    applyTheme();
+    saveDarkPref();
+    renderHeatmap();
+  });
+
+  // ---------- tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+  });
+  function switchTab(name){
+    document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===name));
+    document.querySelectorAll('.tab-panel').forEach(p=> p.classList.toggle('active', p.id === 'tab-'+name));
   }
 
   // ---------- actions ----------
@@ -476,55 +674,120 @@
       }
     }
   }
+  function undoLastGlobal(){
+    if(state.serves.length===0) return;
+    state.serves.pop();
+    saveState();
+    renderAll();
+    showToast('Last serve undone');
+  }
   function deleteServe(id){
     state.serves = state.serves.filter(s=>s.id!==id);
     saveState();
     renderAll();
   }
   function clearAll(){
-    if(confirm('Reset all logged serves and the opponent name? This cannot be undone.')){
-      state = {opponent:'', serves:[]};
+    if(confirm('Start a new match? This clears the opponent name, every logged serve, and all reception patterns. Your roster stays put. This cannot be undone.')){
+      const keepRoster = state.roster && state.roster.length ? state.roster : defaultRoster();
+      state = {opponent:'', serves:[], roster:keepRoster, patterns:{}};
+      entrySet = 1;
+      heatmapView = 'match';
+      heatmapRotationFilter = 'all';
+      universalSelection.rotation = null;
+      universalSelection.seam = null;
+      universalSelection.depth = null;
+      lastAdded = null;
+      if(document.activeElement && typeof document.activeElement.blur === 'function'){
+        document.activeElement.blur();
+      }
+      ensurePatternStructure(entrySet);
       saveState();
       renderAll();
-      showToast('Data reset');
+      showToast('New match started');
     }
+  }
+
+  function changeEntrySet(newSet){
+    if(newSet === entrySet) return;
+    ensurePatternStructure(newSet);
+    const hasOwnData = ROTATIONS.some(r=>{
+      const p = state.patterns[newSet][r];
+      return p && (p.p1 || p.p2 || p.p3);
+    });
+    entrySet = newSet;
+    if(!hasOwnData){
+      const copied = copyForwardPatterns(newSet);
+      const subbing = confirm('Starting Set ' + newSet + '. Are you making substitutions to the lineup?');
+      if(subbing){
+        showToast('Update player assignments below or in the Lineup tab');
+      } else if(copied){
+        showToast('Reception pattern carried over from the previous set');
+      }
+    }
+    renderAll();
   }
 
   // ---------- render: heat map ----------
   function currentHeatList(){
-    if(heatmapView === 'match') return state.serves.slice();
-    const setNum = parseInt(heatmapView.replace('set',''),10);
-    return filterServes({set:setNum});
+    let base;
+    if(heatmapView === 'match') base = state.serves.slice();
+    else base = filterServes({set: parseInt(heatmapView.replace('set',''),10)});
+    if(heatmapRotationFilter !== 'all'){
+      base = base.filter(s=> s.rotation === parseInt(heatmapRotationFilter,10));
+    }
+    return base;
   }
 
-  function renderViewToggle(){
-    const wrap = document.getElementById('viewToggle');
+  function renderHeatFilters(){
+    const viewSel = document.getElementById('heatmapViewSelect');
+    if(!viewSel.dataset.built){
+      SETS.forEach(n=>{
+        const o = document.createElement('option'); o.value = 'set'+n; o.textContent = 'Set ' + n;
+        viewSel.appendChild(o);
+      });
+      const m = document.createElement('option'); m.value = 'match'; m.textContent = 'Match Total';
+      viewSel.appendChild(m);
+      viewSel.dataset.built = '1';
+      viewSel.onchange = ()=>{ heatmapView = viewSel.value; renderHeatmap(); };
+    }
+    viewSel.value = heatmapView;
+
+    const rotSel = document.getElementById('heatmapRotationSelect');
+    if(!rotSel.dataset.built){
+      const allOpt = document.createElement('option'); allOpt.value = 'all'; allOpt.textContent = 'All Rotations';
+      rotSel.appendChild(allOpt);
+      ROTATIONS.forEach(r=>{
+        const o = document.createElement('option'); o.value = r; o.textContent = 'Rotation ' + r;
+        rotSel.appendChild(o);
+      });
+      rotSel.dataset.built = '1';
+      rotSel.onchange = ()=>{ heatmapRotationFilter = rotSel.value; renderHeatmap(); };
+    }
+    rotSel.value = heatmapRotationFilter;
+  }
+
+  function renderHeatSeamLabels(){
+    const wrap = document.getElementById('heatSeamLabels');
     wrap.innerHTML = '';
-    SETS.forEach(n=>{
-      const b = document.createElement('button');
-      b.className = 'pill' + (heatmapView===('set'+n) ? ' active' : '');
-      b.textContent = 'Set ' + n;
-      b.onclick = ()=>{ heatmapView = 'set'+n; renderHeatmap(); renderViewToggle(); };
-      wrap.appendChild(b);
+    SEAMS_HEAT_ORDER.forEach(sm=>{
+      const d = document.createElement('div');
+      d.textContent = 'Seam ' + sm;
+      wrap.appendChild(d);
     });
-    const m = document.createElement('button');
-    m.className = 'pill match-pill' + (heatmapView==='match' ? ' active' : '');
-    m.textContent = 'Match Total';
-    m.onclick = ()=>{ heatmapView = 'match'; renderHeatmap(); renderViewToggle(); };
-    wrap.appendChild(m);
   }
 
   function renderHeatmap(){
     const list = currentHeatList();
     const matrix = countMatrix(list);
     const max = maxOf(matrix);
-    const title = heatmapView==='match' ? 'Match Total' : ('Set ' + heatmapView.replace('set',''));
-    document.getElementById('heatmapTitle').textContent = title;
+    const setLabel = heatmapView==='match' ? 'Match Total' : ('Set ' + heatmapView.replace('set',''));
+    const rotLabel = heatmapRotationFilter==='all' ? '' : (' · Rotation ' + heatmapRotationFilter);
+    document.getElementById('heatmapTitle').textContent = setLabel + rotLabel;
 
     const grid = document.getElementById('heatmapGrid');
     grid.innerHTML = '';
     DEPTHS.forEach(d=>{
-      SEAMS.forEach(sm=>{
+      SEAMS_HEAT_ORDER.forEach(sm=>{
         const count = matrix[sm][d];
         const cell = document.createElement('div');
         cell.className = 'cell' + (count===max && count>0 ? ' hot' : '');
@@ -543,27 +806,26 @@
     document.getElementById('statTotal').textContent = list.length;
     let hotLabel = '—';
     if(max > 0){
+      outer:
       for(const d of DEPTHS){
-        for(const sm of SEAMS){
-          if(matrix[sm][d]===max){ hotLabel = 'Seam ' + sm + DEPTH_LABEL[d]; break; }
+        for(const sm of SEAMS_HEAT_ORDER){
+          if(matrix[sm][d]===max){ hotLabel = 'Seam ' + sm + DEPTH_LABEL[d]; break outer; }
         }
-        if(hotLabel !== '—') break;
       }
     }
     document.getElementById('statHot').textContent = hotLabel;
   }
 
-  // ---------- render: rotation entry ----------
+  // ---------- render: master entry ----------
   function renderEntrySetSelect(){
     const sel = document.getElementById('entrySetSelect');
     if(!sel.dataset.built){
       SETS.forEach(n=>{
-        const o = document.createElement('option');
-        o.value = n; o.textContent = 'Set ' + n;
+        const o = document.createElement('option'); o.value = n; o.textContent = 'Set ' + n;
         sel.appendChild(o);
       });
       sel.dataset.built = '1';
-      sel.onchange = ()=>{ entrySet = parseInt(sel.value,10); renderRotationPanels(); renderLog(); };
+      sel.onchange = ()=> changeEntrySet(parseInt(sel.value,10));
     }
     sel.value = entrySet;
   }
@@ -578,7 +840,7 @@
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'rotation-btn';
         b.textContent = 'R' + r;
-        b.onclick = ()=>{ universalSelection.rotation = r; updateMasterEntry(); };
+        b.onclick = ()=>{ universalSelection.rotation = r; updateMasterEntry(); renderPattern(); };
         rotRow.appendChild(b);
       });
       SEAMS.forEach(sm=>{
@@ -599,11 +861,16 @@
       document.getElementById('universalEnter').onclick = ()=>{
         const s = universalSelection;
         if(!(s.rotation && s.seam && s.depth)) return;
-        addServe(s.rotation, s.seam, s.depth);
+        const rotation = s.rotation, seam = s.seam, depth = s.depth;
+        universalSelection.seam = null;
+        universalSelection.depth = null;
+        addServe(rotation, seam, depth);
       };
+      document.getElementById('globalUndoBtn').onclick = undoLastGlobal;
       rotRow.dataset.built = '1';
     }
     updateMasterEntry();
+    document.getElementById('globalUndoBtn').disabled = state.serves.length === 0;
   }
 
   function updateMasterEntry(){
@@ -620,13 +887,67 @@
     document.getElementById('universalEnter').disabled = !(s.rotation && s.seam && s.depth);
   }
 
+  // ---------- render: reception pattern ----------
+  function renderPattern(){
+    const title = document.getElementById('patternTitle');
+    const body = document.getElementById('patternBody');
+    const r = universalSelection.rotation;
+    if(!r){
+      title.textContent = 'Select a rotation above';
+      body.innerHTML = '<p class="pattern-empty-msg">Pick a rotation in the entry panel to view or edit its reception pattern.</p>';
+      return;
+    }
+    title.textContent = 'Rotation ' + r + ' · Set ' + entrySet;
+    ensurePatternStructure(entrySet);
+    const pattern = state.patterns[entrySet][r];
+
+    body.innerHTML = `
+      <div class="pattern-track">
+        <div class="pattern-seamline"></div>
+        <div class="passer-wrap" data-slot="p1"></div>
+        <div class="passer-wrap" data-slot="p2"></div>
+        <div class="passer-wrap" data-slot="p3"></div>
+      </div>
+      <div class="pattern-seam-tags"><div>1</div><div>2</div><div>3</div><div>4</div></div>
+    `;
+
+    PASSER_SLOTS.forEach(slot=>{
+      const wrap = body.querySelector('.passer-wrap[data-slot="'+slot+'"]');
+      const playerId = pattern[slot];
+      const label = playerShort(playerId);
+      const circle = document.createElement('div');
+      circle.className = 'passer-circle' + (playerId ? '' : ' empty');
+      circle.textContent = label || '+';
+      wrap.appendChild(circle);
+
+      const select = document.createElement('select');
+      select.className = 'passer-select';
+      select.title = PASSER_SLOT_LABEL[slot];
+      const noneOpt = document.createElement('option');
+      noneOpt.value = ''; noneOpt.textContent = 'Unassigned';
+      select.appendChild(noneOpt);
+      state.roster.forEach(p=>{
+        const o = document.createElement('option');
+        o.value = p.id; o.textContent = p.label + (p.isLibero ? ' (Libero)' : '');
+        if(p.id === playerId) o.selected = true;
+        select.appendChild(o);
+      });
+      select.onchange = ()=>{
+        state.patterns[entrySet][r][slot] = select.value || null;
+        saveState();
+        renderPattern();
+      };
+      wrap.appendChild(select);
+    });
+  }
+
+  // ---------- render: rotation totals ----------
   function renderRotationPanels(){
     document.getElementById('rotTotalsSetLabel').textContent = 'Set ' + entrySet;
     const wrap = document.getElementById('rotationGrid');
     wrap.innerHTML = '';
     ROTATIONS.forEach(r=>{
       const list = filterServes({set:entrySet, rotation:r}).slice().sort((a,b)=>b.ts-a.ts);
-
       const card = document.createElement('div');
       card.className = 'rotation-card';
       card.dataset.rotation = r;
@@ -639,6 +960,7 @@
       const lastEl = document.createElement('div');
       lastEl.className = 'last-logged';
       lastEl.style.marginTop = '0';
+      lastEl.style.textAlign = 'left';
       lastEl.textContent = list[0] ? `Last: Seam ${list[0].seam}${DEPTH_LABEL[list[0].depth]} (${DEPTH_HINT[list[0].depth]})` : 'No serves logged yet';
       card.appendChild(lastEl);
 
@@ -653,9 +975,63 @@
     });
   }
 
-  function renderLog(){
-    document.getElementById('logSetLabel').textContent = 'Set ' + entrySet;
-    const list = filterServes({set:entrySet}).slice().sort((a,b)=>b.ts-a.ts);
+  // ---------- render: lineup tab ----------
+  function renderRoster(){
+    const wrap = document.getElementById('rosterList');
+    wrap.innerHTML = '';
+    state.roster.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'roster-row';
+
+      const input = document.createElement('input');
+      input.type = 'text'; input.maxLength = 6; input.value = p.label;
+      input.placeholder = 'Initials or #';
+      input.oninput = ()=>{ p.label = input.value; saveState(); renderPattern(); };
+
+      const lbl = document.createElement('label');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = !!p.isLibero;
+      cb.onchange = ()=>{ p.isLibero = cb.checked; saveState(); };
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode('Libero'));
+
+      const del = document.createElement('button');
+      del.className = 'del-btn'; del.innerHTML = '&times;'; del.title = 'Remove player';
+      del.onclick = ()=>{
+        state.roster = state.roster.filter(x=>x.id !== p.id);
+        saveState();
+        renderRoster();
+        renderPattern();
+      };
+
+      row.appendChild(input);
+      row.appendChild(lbl);
+      row.appendChild(del);
+      wrap.appendChild(row);
+    });
+  }
+  document.getElementById('addPlayerBtn').addEventListener('click', ()=>{
+    state.roster.push({id:uid(), label:'', isLibero:false});
+    saveState();
+    renderRoster();
+  });
+
+  // ---------- render: log tab ----------
+  function renderLogTab(){
+    const sel = document.getElementById('logSetSelect');
+    if(!sel.dataset.built){
+      SETS.forEach(n=>{
+        const o = document.createElement('option'); o.value = n; o.textContent = 'Set ' + n;
+        sel.appendChild(o);
+      });
+      sel.dataset.built = '1';
+      sel.onchange = ()=>{ renderLogTab(); };
+    }
+    if(document.activeElement !== sel) sel.value = entrySet;
+    const logSet = parseInt(sel.value,10);
+    document.getElementById('logSetLabel2').textContent = 'Set ' + logSet;
+
+    const list = filterServes({set:logSet}).slice().sort((a,b)=>b.ts-a.ts);
     const el = document.getElementById('logList');
     el.innerHTML = '';
     if(list.length===0){
@@ -665,11 +1041,10 @@
     list.forEach(s=>{
       const row = document.createElement('div');
       row.className = 'log-row';
-      row.innerHTML = `<span><span class="tag">R${s.rotation}</span>Seam ${s.seam}${DEPTH_LABEL[s.depth]} <span style="color:#9AA1AC;">(${DEPTH_HINT[s.depth]})</span></span>`;
+      row.innerHTML = `<span><span class="tag">R${s.rotation}</span>Seam ${s.seam}${DEPTH_LABEL[s.depth]} <span style="color:var(--muted);">(${DEPTH_HINT[s.depth]})</span></span>`;
       const del = document.createElement('button');
-      del.innerHTML = '&times;';
-      del.title = 'Remove this serve';
-      del.onclick = ()=> deleteServe(s.id);
+      del.innerHTML = '&times;'; del.title = 'Remove this serve';
+      del.onclick = ()=>{ deleteServe(s.id); renderLogTab(); };
       row.appendChild(del);
       el.appendChild(row);
     });
@@ -679,10 +1054,9 @@
     if(!lastAdded) return;
     const btn = document.getElementById('universalEnter');
     if(btn){
-      const original = 'Enter';
       btn.textContent = 'Logged ✓';
       btn.classList.add('logged');
-      setTimeout(()=>{ btn.textContent = original; btn.classList.remove('logged'); }, 450);
+      setTimeout(()=>{ btn.textContent = 'Enter'; btn.classList.remove('logged'); }, 450);
     }
     const lastText = document.getElementById('universalLast');
     if(lastText){
@@ -693,12 +1067,15 @@
 
   function renderAll(){
     document.getElementById('opponentInput').value = state.opponent || '';
-    renderViewToggle();
+    renderHeatFilters();
+    renderHeatSeamLabels();
     renderHeatmap();
     renderEntrySetSelect();
     renderMasterEntry();
+    renderPattern();
     renderRotationPanels();
-    renderLog();
+    renderRoster();
+    renderLogTab();
     flashLastAdded();
   }
 
@@ -707,7 +1084,6 @@
     const el = document.getElementById('printReport');
     const opp = state.opponent ? state.opponent : 'Opponent TBD';
     const dateStr = new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
-
     const views = SETS.map(n=>({key:'set'+n,label:'Set '+n})).concat([{key:'match',label:'Match Total'}]);
 
     let cards = '';
@@ -717,9 +1093,11 @@
       const max = maxOf(matrix);
       let mini = '';
       DEPTHS.forEach(d=>{
-        SEAMS.forEach(sm=>{
+        SEAMS_HEAT_ORDER.forEach(sm=>{
           const c = matrix[sm][d];
-          mini += `<div class="pr-mini-cell" style="background:${heatColor(c,max)};color:${textColorFor(c,max)||'#12203A'}">${c}</div>`;
+          const bg = heatColorFixed(c, max, false);
+          const fg = c===0 ? '#8A919C' : (c/max > 0.55 ? '#FFFFFF' : '#00244D');
+          mini += `<div class="pr-mini-cell" style="background:${bg};color:${fg}">${c}</div>`;
         });
       });
       cards += `<div class="pr-card"><h4>${v.label} (${list.length})</h4><div class="pr-net"></div><div class="pr-mini-grid">${mini}</div></div>`;
@@ -727,7 +1105,7 @@
 
     let tableRows = '';
     DEPTHS.forEach(d=>{
-      SEAMS.forEach(sm=>{
+      SEAMS_HEAT_ORDER.forEach(sm=>{
         let rowCells = '';
         views.forEach(v=>{
           const list = v.key==='match' ? state.serves : filterServes({set:parseInt(v.key.replace('set',''),10)});
