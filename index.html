@@ -19,6 +19,9 @@
     --white:#FFFFFF;
     --heat-0:#EDF0F4;
     --line:#D8DBDD;
+    --card-surface:#FBFBFA;
+    --muted:#6D7683;
+    --muted-soft:#7A8290;
     --radius:10px;
   }
   body[data-theme="dark"]{
@@ -33,6 +36,9 @@
     --white:#1A212B;
     --heat-0:#2D3847;
     --line:#39485D;
+    --card-surface:#1C2531;
+    --muted:#B8C4D8;
+    --muted-soft:#A7B4C8;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -186,13 +192,13 @@
   @media (max-width:720px){ .rotation-grid{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:480px){ .rotation-grid{grid-template-columns:1fr;} }
   .rotation-card{
-    border:1.5px solid var(--line);border-radius:12px;padding:14px;background:#FBFBFA;
+    border:1.5px solid var(--line);border-radius:12px;padding:14px;background:var(--card-surface);
   }
   .rotation-card .rc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
   .rotation-card .rc-head .rname{font-family:'Anton',sans-serif;font-size:17px;color:var(--navy);}
   .rotation-card .rc-head .rtotal{font-size:12px;color:var(--bronze);font-weight:700;}
   .undo-btn{
-    background:none;border:none;color:#9AA1AC;font-size:12px;cursor:pointer;text-decoration:underline;
+    background:none;border:none;color:var(--muted-soft);font-size:12px;cursor:pointer;text-decoration:underline;
     padding:8px 0 0;display:inline-block;
   }
   .undo-btn:hover{color:var(--blue);}
@@ -202,13 +208,13 @@
     border-radius:999px;padding:6px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;
   }
   .mini-btn:hover{border-color:var(--blue);}
-  .lineup-text{margin-top:8px;color:#6D7683;font-size:12px;min-height:16px;}
+  .lineup-text{margin-top:8px;color:var(--muted);font-size:12px;min-height:16px;}
 
   .master-entry{
-    background:linear-gradient(180deg,#FBFBFA,#F3F4F2);
+    background:linear-gradient(180deg,var(--card-surface),var(--paper));
     border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 18px;margin-bottom:22px;
   }
-  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:#8A919C;font-weight:700;margin:0 0 5px;}
+  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-soft);font-weight:700;margin:0 0 5px;}
   .rotation-btn{
     flex:1;min-height:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
     font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);cursor:pointer;
@@ -238,7 +244,7 @@
   .submit-btn:active{transform:scale(.97);}
   .submit-btn:disabled{background:#E7E9EA;color:#AEB4BC;cursor:not-allowed;}
   .submit-btn.logged{background:#2E9E5B;color:var(--white);}
-  .last-logged{font-size:12px;color:#7A8290;margin-top:8px;min-height:16px;}
+  .last-logged{font-size:12px;color:var(--muted-soft);margin-top:8px;min-height:16px;}
 
   .log-section{border-top:1px solid var(--line);padding-top:16px;}
   .log-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
@@ -323,7 +329,7 @@
           <select id="entrySetSelect"></select>
         </div>
       </div>
-      <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. Your picks stay selected so back-to-back serves to the same spot are a quick double-tap — just switch the rotation whenever you rotate.</p>
+      <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. Rotation stays selected so you can log back-to-back serves in the same rotation, and seam/depth clear for the next pass.</p>
 
       <div class="master-entry">
         <p class="selector-label">Rotation</p>
@@ -752,6 +758,9 @@
         const s = universalSelection;
         if(!(s.rotation && s.seam && s.depth)) return;
         addServe(s.rotation, s.seam, s.depth);
+        s.seam = null;
+        s.depth = null;
+        updateMasterEntry();
       };
       rotRow.dataset.built = '1';
     }
