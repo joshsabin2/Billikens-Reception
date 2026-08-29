@@ -2,1225 +2,1220 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Billikens Passing Tracker</title>
-<script>
-  // Applied immediately (before CSS/paint) to avoid a flash of the wrong theme.
-  (function(){
-    try{
-      var saved = localStorage.getItem('billikens-passing-tracker-theme');
-      var theme = saved || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
-      if(theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-    }catch(e){ /* storage unavailable — default light theme applies */ }
-  })();
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serve Tracker — SLU Volleyball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy: #003DA5;      /* SLU Blue — PMS 293C, official primary */
-    --navy-light: #235FC4; /* lighter tint of SLU Blue for secondary chrome */
-    --navy-deep: #00244D;  /* Grand Blue — official SLU secondary, for depth */
-    --gold: #FFC72C;      /* Gateway Gold — official SLU secondary */
-    --gold-deep: #E6AC00;
-    --bg: #EEF0F3;
-    --card: #FFFFFF;
-    --line: #C8C9C7;      /* College Church Gray — official SLU neutral */
-    --ink: #101828;
-    --ink-soft: #5B6472;
-
-    --v0: #B7382B;
-    --v1: #DB8A2E;
-    --v2: #8FB33E;
-    --v3: #1F8F4E;
-
-    --s1: #2D5FA3;
-    --s2: #7A4FBE;
-    --s3: #1E8E7E;
-    --s4: #C9791E;
-    --s5: #C23B6B;
-
-    /* semantic surface tokens (theme-aware) */
-    --heading: var(--navy);      /* text-only usage of brand blue */
-    --surface: #FFFFFF;          /* raised button/control surface */
-    --danger: #B7382B;
-    --row-bg: #F7F8FA;
-    --team-row-bg: #F3EFDD;
-    --total-cell-bg: #FFF6DD;
-    --warn-bg: #FDF1EC;
-    --caution-bg: #FFF6D8;
-    --caution-border: #B9860B;
-    --placeholder: #9AA3B0;
-
-    color-scheme: light;
+    --navy:#00244D;
+    --blue:#003DA5;
+    --gold:#FFC72C;
+    --gray:#C8C9C7;
+    --beige:#E3DECB;
+    --bronze:#795D3E;
+    --ink:#12203A;
+    --paper:#F3F4F2;
+    --white:#FFFFFF;
+    --heat-0:#EDF0F4;
+    --line:#D8DBDD;
+    --court-floor:#F6F3EC;
+    --muted:#63697A;
+    --muted-faint:#B7BFC9;
+    --danger:#B04A4A;
+    --radius:10px;
   }
-
-  [data-theme="dark"]{
-    --bg: #0B1220;
-    --card: #141B2E;
-    --line: #263049;
-    --ink: #EDEFF3;
-    --ink-soft: #98A2B8;
-
-    --heading: #6FA8FF;
-    --surface: #1E2740;
-    --danger: #E5695C;
-    --row-bg: #1B2338;
-    --team-row-bg: #2E2A18;
-    --total-cell-bg: #332C14;
-    --warn-bg: #3A1F1C;
-    --caution-bg: #362C10;
-    --caution-border: #E8B923;
-    --placeholder: #7C8699;
-
-    color-scheme: dark;
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Barlow Semi Condensed', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background .2s ease, color .2s ease;
   }
+  h1,h2,h3,.display{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+  }
+  button{font-family:inherit;}
+  @keyframes button-hit{
+    0%{transform:scale(1);filter:brightness(1);}
+    45%{transform:scale(.93);filter:brightness(.88);}
+    100%{transform:scale(1);filter:brightness(1);}
+  }
+  button:not(:disabled):active{animation:button-hit .22s ease-out;}
+  @media (prefers-reduced-motion:reduce){button:not(:disabled):active{animation:none;}}
+  a{color:inherit;}
 
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-    -webkit-user-select:none;user-select:none;overscroll-behavior:none;}
-  input{-webkit-user-select:text;user-select:text;}
-
-  .display{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-    font-weight:800;text-transform:uppercase;letter-spacing:0.04em;}
-  .tnum{font-variant-numeric:tabular-nums;}
-
-  /* ---------- Scoreboard header ---------- */
-  header.scoreboard{
-    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-deep) 100%);
-    color:#fff;padding:14px 18px 12px;
+  /* ---------- header ---------- */
+  header{
+    background:linear-gradient(135deg,var(--navy),#001630);
+    color:var(--white);
+    padding:16px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
     border-bottom:4px solid var(--gold);
-    position:sticky;top:0;z-index:20;
   }
-  .scoreboard-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:baseline;gap:10px;}
-  .brand .display{font-size:19px;letter-spacing:0.06em;}
-  .brand .sub{color:var(--gold);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;}
-  .header-right{display:flex;align-items:center;gap:10px;}
-  .theme-toggle{
-    width:38px;height:38px;border-radius:50%;border:2px solid var(--gold);background:transparent;
-    color:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .brand .display{font-size:26px;line-height:1;color:var(--white);}
+  .brand .sub{font-size:13px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:600;}
+  .header-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .opp-field{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 8px 6px 16px;}
+  .opp-field span{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.65);}
+  .opp-field input{
+    background:transparent;border:none;color:var(--white);font-family:'Barlow Semi Condensed',sans-serif;
+    font-size:16px;font-weight:600;padding:6px 8px;width:160px;outline:none;
   }
-  .theme-toggle:active{background:rgba(255,255,255,0.18);}
-  .set-flip{
-    background:var(--navy-deep);border:2px solid var(--gold);border-radius:8px;
-    padding:6px 14px;text-align:center;min-width:88px;
+  .opp-field input::placeholder{color:rgba(255,255,255,.5);}
+  .btn{
+    border:none;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:700;letter-spacing:.07em;
+    text-transform:uppercase;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;
+    -webkit-tap-highlight-color:transparent;
   }
-  .set-flip .lbl{font-size:9px;letter-spacing:0.16em;color:var(--gold);font-weight:700;}
-  .set-flip .val{font-size:22px;font-weight:800;line-height:1.1;}
+  .btn:active{transform:scale(.96);}
+  .btn-gold{background:var(--gold);color:var(--navy);}
+  .btn-gold:hover{box-shadow:0 4px 14px rgba(255,199,44,.45);}
+  .btn-ghost{background:transparent;color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.3);}
+  .btn-ghost:hover{color:var(--white);border-color:var(--white);}
+  .btn-icon{background:rgba(255,255,255,.1);color:var(--white);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:10px 14px;font-size:15px;cursor:pointer;}
 
-  /* ---------- Tabs ---------- */
-  nav.tabs{display:flex;background:var(--navy-light);position:sticky;top:64px;z-index:19;
-    box-shadow:0 2px 6px rgba(0,0,0,0.15);}
-  nav.tabs button{
-    flex:1;border:none;background:transparent;color:rgba(255,255,255,0.65);
-    padding:13px 8px;font-weight:700;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;
-    cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  /* ---------- tab nav ---------- */
+  .tabnav{
+    display:flex;gap:6px;padding:12px 28px;background:var(--white);border-bottom:1px solid var(--line);
+    flex-wrap:wrap;position:sticky;top:0;z-index:20;
   }
-  nav.tabs button.active{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,0.06);}
+  .tab-btn{
+    border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;
+    padding:9px 18px;font-size:13.5px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:.12s ease;
+  }
+  .tab-btn.active{background:var(--navy);border-color:var(--navy);color:var(--white);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
 
-  main{max-width:1100px;margin:0 auto;padding:16px 14px 60px;}
-  .tabpanel{display:none;}
-  .tabpanel.active{display:block;}
+  /* ---------- layout ---------- */
+  main{padding:24px 28px 60px;}
+  .track-grid{
+    display:grid;
+    grid-template-columns:1fr minmax(340px,460px);
+    gap:22px;
+    align-items:start;
+  }
+  @media (max-width:1000px){
+    .track-grid{grid-template-columns:1fr;}
+    .heatmap-panel{position:static;}
+  }
+  .panel{
+    background:var(--white);
+    border-radius:16px;
+    box-shadow:0 1px 3px rgba(0,36,77,.08), 0 8px 24px rgba(0,36,77,.06);
+    padding:22px;
+  }
+  .panel + .panel{margin-top:22px;}
+  .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .panel-title h2{font-size:20px;color:var(--navy);margin:0;}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);font-weight:700;margin:0 0 4px;}
 
-  /* ---------- Toolbar (Tab 1) ---------- */
-  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px;}
-  .set-picker{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:5px;}
-  .set-picker button{
-    border:none;background:transparent;padding:9px 13px;border-radius:7px;font-weight:800;
-    color:var(--ink-soft);font-size:14px;cursor:pointer;min-width:44px;
-  }
-  .set-picker button.active{background:var(--navy);color:#fff;}
-  .set-picker button.active::after{content:none;}
-
-  button.pill{
-    border:none;border-radius:9px;padding:11px 16px;font-weight:700;font-size:13px;cursor:pointer;
-    letter-spacing:0.02em;
-  }
-  #undoBtn{background:var(--surface);color:var(--heading);border:1.5px solid var(--heading);}
-  #undoBtn:active{background:var(--navy);color:#fff;}
-  #undoBtn:disabled{opacity:0.35;}
-  #exportPdfBtn{background:var(--gold);color:var(--navy-deep);margin-left:auto;}
-  #exportPdfBtn:active{background:var(--gold-deep);}
-  #resetBtn{background:transparent;color:var(--danger);border:1.5px solid var(--danger);}
-  #pdfFallbackLink{background:var(--gold);color:var(--navy-deep);text-decoration:none;}
-
-  #lastActionToast{font-size:12px;color:var(--ink-soft);width:100%;order:5;min-height:16px;}
-  #lastActionToast b{color:var(--ink);}
-
-  /* ---------- Roster cards ---------- */
-  .rosters{display:flex;flex-direction:column;gap:16px;}
-  .roster-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;}
-  .roster-card h2{margin:0 0 10px;font-size:17px;color:var(--heading);}
-  .roster-card h2 input{
-    font-size:17px;font-weight:800;color:var(--heading);border:none;border-bottom:2px dashed var(--line);
-    padding:2px 0;width:220px;font-family:inherit;background:transparent;
-  }
-  .roster-card h2 input:focus{outline:none;border-bottom-color:var(--gold-deep);}
-  .roster-card h2 input::placeholder{color:var(--placeholder);font-weight:600;}
-
-  /* ---------- Timeout / sub tracker (Billikens only) ---------- */
-  .court-tracker-card{
-    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:16px;
-  }
-  .court-tracker-title{margin:0 0 12px;font-size:17px;color:var(--heading);}
-  .court-tracker-row{display:flex;gap:10px;flex-wrap:wrap;}
-  .court-tracker{
-    flex:1;min-width:150px;background:var(--row-bg);border:1.5px solid var(--line);border-radius:10px;
-    padding:9px 12px;transition:background 0.15s, border-color 0.15s;
-  }
-  .court-tracker.at-limit{background:var(--warn-bg);border-color:var(--v0);}
-  .court-tracker.near-limit{background:var(--caution-bg);border-color:var(--caution-border);}
-  .ct-label{font-size:12px;font-weight:800;color:var(--heading);text-transform:uppercase;letter-spacing:0.04em;}
-  .ct-set-note{font-weight:600;color:var(--ink-soft);text-transform:none;letter-spacing:normal;font-size:11px;}
-  .ct-controls{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
-  .ct-btn{
-    width:34px;height:34px;border-radius:50%;border:1.5px solid var(--heading);background:var(--surface);color:var(--heading);
-    font-size:18px;font-weight:800;cursor:pointer;line-height:1;flex-shrink:0;
-  }
-  .ct-btn:active{background:var(--navy);color:#fff;}
-  .ct-btn:disabled{opacity:0.3;cursor:default;}
-  .ct-btn:disabled:active{background:var(--surface);color:var(--heading);}
-  .ct-count{font-size:17px;font-weight:800;color:var(--ink);}
-  .court-tracker.at-limit .ct-count{color:var(--v0);}
-  .court-tracker.near-limit .ct-count{color:var(--caution-border);}
-
-  .add-player-form{display:flex;gap:8px;margin-bottom:12px;}
-  .add-player-form input{
-    flex:0 0 140px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;
-    background:var(--card);color:var(--ink);
-  }
-  .add-player-form button{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-weight:700;font-size:13px;cursor:pointer;}
-
-  .roster-list{display:flex;flex-direction:column;gap:8px;}
-  .empty-note{color:var(--placeholder);font-size:13px;padding:10px 2px;}
-
-  .player-row{
-    display:flex;align-items:center;gap:8px;background:var(--row-bg);border:1px solid var(--line);
-    border-radius:10px;padding:8px 8px 8px 10px;
-  }
-  .player-row.struggling{
-    background:var(--warn-bg);border-color:var(--v0);
-  }
-  .warn-triangle{
-    font-size:18px;flex-shrink:0;line-height:1;cursor:help;
-    animation:warn-pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes warn-pulse{
-    0%,100%{opacity:1;} 50%{opacity:0.45;}
-  }
-  @media (prefers-reduced-motion: reduce){
-    .warn-triangle{animation:none;}
+  select{
+    font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:14.5px;color:var(--ink);
+    border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--white);cursor:pointer;
   }
 
-  /* ---------- Tap-confirm "pop" animation (pass buttons, undo, +/-) ---------- */
-  @keyframes btn-pop{
-    0%{transform:scale(1);}
-    40%{transform:scale(0.80);}
-    70%{transform:scale(1.14);}
-    100%{transform:scale(1);}
+  /* ---------- heat map panel ---------- */
+  .heatmap-panel{position:sticky;top:76px;}
+  .heat-filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .heat-filters .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+  .heat-filters label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;}
+  .heat-filters select{width:100%;}
+  .heatmap-mode-toggle{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--paper);margin:-6px 0 10px;width:max-content;}
+  .heatmap-mode-btn{border:none;border-radius:999px;background:transparent;color:var(--muted);padding:6px 11px;font:700 11px 'Barlow Semi Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;}
+  .heatmap-mode-btn.active{background:var(--navy);color:var(--white);}
+
+  .court-wrap{display:flex;gap:10px;}
+  .depth-labels{display:flex;flex-direction:column;justify-content:space-around;padding:38px 0 10px;}
+  .depth-labels div{
+    font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);font-weight:700;
+    writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
   }
-  .btn-pop{animation:btn-pop 0.32s cubic-bezier(.34,1.56,.64,1);}
-  @media (prefers-reduced-motion: reduce){
-    .btn-pop{animation:none;}
+  .court{flex:1;}
+  .seam-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;}
+  .seam-labels div{text-align:center;font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.06em;}
+
+  .net-wrap{position:relative;padding:0 3px;margin-bottom:2px;}
+  .net{
+    height:13px;border-radius:2px;position:relative;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,36,77,.5) 0 1.5px, transparent 1.5px 8px),
+      repeating-linear-gradient(0deg, rgba(0,36,77,.5) 0 1.5px, transparent 1.5px 7px),
+      linear-gradient(var(--white),var(--white));
+    border:1px solid var(--navy);border-bottom:3px solid var(--navy);
+  }
+  .net-wrap::before, .net-wrap::after{
+    content:"";position:absolute;top:-11px;width:3px;height:24px;background:var(--gold);border-radius:1px;
+    box-shadow:0 0 0 1px var(--navy);
+  }
+  .net-wrap::before{left:1px;}
+  .net-wrap::after{right:1px;}
+
+  .court-surface{
+    position:relative;
+    background:var(--court-floor);
+    border-left:4px solid var(--navy);
+    border-right:4px solid var(--navy);
+    border-bottom:6px solid var(--navy);
+    border-radius:0 0 8px 8px;
+    padding:7px;
+  }
+  .attack-line{position:absolute;left:7px;right:7px;top:calc(33.333% - 1px);border-top:2px dashed rgba(0,36,77,.4);pointer-events:none;}
+  .grid4x3{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;position:relative;}
+  .cell{
+    aspect-ratio:1/.82;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    position:relative;border:1px solid rgba(0,36,77,.12);transition:transform .1s ease;
+  }
+  .cell .count{font-family:'Anton',sans-serif;font-size:22px;color:var(--navy);display:flex;flex-direction:column;align-items:center;line-height:.9;}
+  .cell .count.zero{color:var(--muted-faint);font-size:16px;}
+  .serve-percent{font-family:'Barlow Semi Condensed',sans-serif;font-size:10px;font-weight:700;line-height:1.1;}
+  .cell.hot{outline:2.5px solid var(--gold);outline-offset:-2.5px;}
+  .cell.hot::after{content:"★";position:absolute;top:3px;right:5px;font-size:10px;color:var(--gold);}
+  .legend{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:12px;color:var(--muted);}
+  .legend .bar{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--heat-0),var(--blue));}
+  .stat-row{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;}
+  .stat{background:var(--paper);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;}
+  .stat .n{font-family:'Anton',sans-serif;font-size:26px;color:var(--blue);line-height:1;}
+  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:4px;}
+
+  /* ---------- entry panel ---------- */
+  .entry-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .set-select-wrap{display:flex;align-items:center;gap:10px;}
+  .set-select-wrap label{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;}
+  .hint{font-size:12.5px;color:var(--muted);margin:6px 0 18px;}
+
+  .master-entry{
+    background:linear-gradient(180deg, var(--white), var(--paper));
+    border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 18px;margin-bottom:18px;
+  }
+  .master-entry-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .selector-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:0 0 5px;}
+  .selector-row{display:flex;gap:6px;margin-bottom:10px;}
+  .seam-btn, .depth-btn, .rotation-btn{
+    flex:1;min-height:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--white);
+    font-family:'Anton',sans-serif;font-size:16px;color:var(--ink);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:.1s ease;-webkit-tap-highlight-color:transparent;
+  }
+  .depth-btn{flex-direction:column;gap:2px;line-height:1;}
+  .depth-btn .letter{font-family:'Anton',sans-serif;font-size:18px;}
+  .depth-btn .hint-word{font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em;opacity:.7;}
+  .seam-btn:active, .depth-btn:active, .rotation-btn:active{transform:scale(.95);}
+  .seam-btn.active, .depth-btn.active, .rotation-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+  .rotation-btn.active{background:var(--navy);border-color:var(--navy);}
+  .master-entry .submit-btn{margin-top:4px;min-height:56px;font-size:18px;}
+  .submit-btn{
+    width:100%;border-radius:10px;border:none;background:var(--gold);color:var(--navy);
+    font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+    min-height:52px;transition:.12s ease;-webkit-tap-highlight-color:transparent;
+  }
+  .submit-btn:active{transform:scale(.97);}
+  .submit-btn:disabled{background:#E7E9EA;color:#AEB4BC;cursor:not-allowed;}
+  .submit-btn.logged{background:#2E9E5B;color:var(--white);}
+  .last-logged{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;text-align:center;}
+  .undo-row{display:flex;justify-content:center;margin-top:6px;}
+  .undo-global-btn{
+    background:none;border:1.5px solid var(--line);color:var(--ink);font-size:12.5px;font-weight:700;
+    border-radius:999px;padding:8px 16px;cursor:pointer;letter-spacing:.03em;
+  }
+  .undo-global-btn:hover{border-color:var(--danger);color:var(--danger);}
+  .undo-global-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* ---------- reception pattern ---------- */
+  .pattern-card{border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:18px;background:var(--court-floor);}
+  .pattern-track{position:relative;height:64px;margin:8px 10px 4px;}
+  .pattern-seamline{position:absolute;top:50%;left:0;right:0;border-top:2px dashed rgba(0,36,77,.3);}
+  .passer-wrap{position:absolute;top:50%;width:52px;height:52px;transform:translate(-50%,-50%);}
+  .passer-wrap[data-slot="p1"]{left:75%;}
+  .passer-wrap:nth-child(3){left:50%;}
+  .passer-wrap[data-slot="p3"]{left:25%;}
+  .passer-circle{
+    width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--white);
+    display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:16px;
+    border:3px solid var(--gold);position:relative;pointer-events:none;
+  }
+  .passer-circle.empty{background:var(--white);color:var(--muted-faint);border-color:var(--line);}
+  .passer-select{
+    position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;
+  }
+  .pattern-seam-tags{display:grid;grid-template-columns:repeat(3,1fr);margin-top:2px;}
+  .pattern-seam-tags div{text-align:center;font-size:10px;color:var(--bronze);font-weight:700;letter-spacing:.06em;}
+  .pattern-empty-msg{font-size:13px;color:var(--muted);text-align:center;padding:10px 0;}
+
+  .rotation-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media (max-width:1000px){ .rotation-grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:720px){ .rotation-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){ .rotation-grid{grid-template-columns:1fr;} }
+  .rotation-card{border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--paper);}
+  .rotation-card .rc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .rotation-card .rc-head .rname{font-family:'Anton',sans-serif;font-size:16px;color:var(--navy);}
+  .rotation-card .rc-head .rtotal{font-size:12px;color:var(--bronze);font-weight:700;}
+  .undo-btn{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;padding:6px 0 0;}
+  .undo-btn:hover{color:var(--blue);}
+  .undo-btn:disabled{opacity:.4;cursor:not-allowed;text-decoration:none;}
+
+  /* ---------- lineup tab ---------- */
+  .roster-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .roster-row input[type="text"]{
+    flex:1;max-width:160px;border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;font-size:15px;
+    font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--ink);background:var(--white);
+  }
+  .roster-row label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);}
+  .roster-row .del-btn{margin-left:auto;background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;}
+  .add-player-btn{margin-top:14px;}
+
+  /* ---------- reception-pattern map overlay ---------- */
+  .heat-pattern-overlay{position:absolute;inset:7px;pointer-events:none;z-index:3;}
+  .heat-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:var(--navy);color:var(--white);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .heat-passer.p1{left:76.25%;}.heat-passer.p2{left:50%;}.heat-passer.p3{left:23.75%;}
+  .heat-pattern-note{font-size:11px;color:var(--muted);margin:-6px 0 10px;min-height:14px;}
+  .map-sections{display:flex;flex-direction:column;gap:18px;}
+  .map-section{border:1.5px solid var(--line);border-radius:12px;padding:14px;background:var(--white);}
+  .map-section h3{font-size:16px;color:var(--navy);margin:0 0 10px;}
+  .map-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  .map-card{border:1px solid var(--line);border-radius:8px;padding:7px;background:var(--paper);min-width:0;}
+  .map-card h3{font-size:12px;color:var(--navy);margin:0;white-space:nowrap;}
+  .map-card p{font-size:9px;color:var(--muted);margin:0 0 5px;line-height:1.1;}
+  .map-court{position:relative;border:2px solid var(--navy);border-top-width:6px;border-radius:2px 2px 4px 4px;background:var(--court-floor);padding:3px;}
+  .map-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+  .map-cell{aspect-ratio:1/.78;border:1px solid rgba(0,36,77,.12);border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:12px;line-height:.9;color:var(--navy);}
+  .map-overlay{position:absolute;inset:6px;pointer-events:none;z-index:2;}
+  .map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:42px;height:42px;padding:0 7px;border-radius:50%;background:var(--navy);border:2px solid var(--gold);color:white;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:14px;}
+  @media (max-width:720px){.map-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .map-passer.p1{left:76.25%;}.map-passer.p2{left:50%;}.map-passer.p3{left:23.75%;}
+  .maps-empty{color:var(--muted);font-size:14px;padding:10px 0;}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);
+    background:var(--navy);color:var(--white);padding:10px 20px;border-radius:999px;font-size:13px;
+    font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:50;max-width:80vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 0 30px;}
+
+  .seam-btn:focus-visible, .depth-btn:focus-visible, .rotation-btn:focus-visible, .submit-btn:focus-visible, .cell:focus-visible, .tab-btn:focus-visible{
+    outline:2px solid var(--blue);outline-offset:2px;
   }
 
-  .player-tag{
-    font-weight:800;font-size:14px;color:var(--heading);min-width:38px;text-align:center;
-    background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 4px;flex-shrink:0;
+  /* ---------- print / PDF export ---------- */
+  #printReport{display:none;}
+  @media print{
+    .screen-only{display:none !important;}
+    #printReport{display:block !important;padding:20px;}
+    body{background:#fff;color:#12203A;}
+    *, *::before, *::after{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+    .pr-map-cell{background-clip:padding-box !important;}
   }
-  .player-avg{min-width:64px;text-align:center;flex-shrink:0;}
-  .player-avg .n{font-weight:800;font-size:15px;}
-  .player-avg .l{font-size:9px;color:var(--ink-soft);letter-spacing:0.06em;text-transform:uppercase;}
-
-  .pass-btns{display:flex;gap:6px;flex:1;justify-content:center;}
-  .pass-btns button{
-    width:44px;height:44px;border-radius:50%;border:none;color:#fff;font-weight:800;font-size:16px;
-    cursor:pointer;flex-shrink:0;
-  }
-  .pass-btns button:active{filter:brightness(0.85);transform:scale(0.94);}
-  .v0{background:var(--v0);} .v1{background:var(--v1);} .v2{background:var(--v2);} .v3{background:var(--v3);}
-
-  .del-btn{
-    width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--placeholder);
-    font-size:14px;line-height:1;cursor:pointer;flex-shrink:0;
-  }
-
-  /* ---------- Sub nav (tabs 2 & 3) ---------- */
-  .panel-title{color:var(--heading);font-size:20px;margin:4px 0 12px;}
-  .subnav{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:5px;margin-bottom:14px;width:fit-content;}
-  .subnav-btn{border:none;background:transparent;padding:9px 16px;border-radius:7px;font-weight:700;font-size:13px;color:var(--ink-soft);cursor:pointer;}
-  .subnav-btn.active{background:var(--navy);color:#fff;}
-  .subpage{display:none;}
-  .subpage.active{display:block;}
-
-  /* ---------- Averages table ---------- */
-  table.stats{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
-  table.stats th, table.stats td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--line);font-size:13px;}
-  table.stats th{background:var(--navy);color:#fff;font-weight:700;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;}
-  table.stats td:first-child, table.stats th:first-child{text-align:left;padding-left:14px;}
-  table.stats tr.team-row td{background:var(--team-row-bg);font-weight:800;}
-  table.stats tr.team-row td:first-child{color:var(--heading);}
-  table.stats td .avg{font-weight:800;font-size:15px;}
-  table.stats td .meta{display:block;font-size:10px;color:var(--ink-soft);margin-top:1px;}
-  table.stats td.total-cell{background:var(--total-cell-bg);}
-  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-
-  /* ---------- Log page ---------- */
-  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:var(--ink-soft);}
-  .legend span{display:inline-flex;align-items:center;gap:5px;}
-  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block;}
-  .log-section-heading{
-    margin:18px 0 10px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;
-    color:var(--heading);border-bottom:2px solid var(--line);padding-bottom:6px;
-  }
-  .log-section-heading:first-of-type{margin-top:0;}
-  .team-log-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:6px;}
-  .team-log-table th, .team-log-table td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:13px;}
-  .team-log-table th{background:var(--navy);color:#fff;font-weight:700;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;}
-  .team-log-table .tl-idx{color:var(--ink-soft);width:36px;font-variant-numeric:tabular-nums;}
-  .team-log-table .tl-player{font-weight:700;}
-  .set-tag{
-    color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;
-  }
-  .log-player{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
-  .log-player h3{margin:0 0 8px;font-size:14px;color:var(--heading);}
-  .chip-row{display:flex;flex-wrap:wrap;gap:6px;}
-  .chip{
-    width:30px;height:30px;border-radius:7px;color:#fff;font-weight:800;font-size:13px;
-    display:flex;align-items:center;justify-content:center;
-  }
-
-  .empty-state{text-align:center;color:var(--placeholder);padding:40px 10px;font-size:14px;}
-
-  @media (min-width:760px){
-    .rosters{flex-direction:row;}
-    .roster-card{flex:1;}
-  }
+  .pr-title{font-family:'Anton',sans-serif;font-size:26px;color:var(--navy);margin:0 0 2px;}
+  .pr-sub{font-size:14px;color:#555;margin:0 0 20px;}
+  .pr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px;}
+  .pr-card{border:1px solid var(--line);border-radius:10px;padding:10px;}
+  .pr-card h4{font-family:'Anton',sans-serif;font-size:13px;color:var(--navy);margin:0 0 6px;text-align:center;letter-spacing:.06em;}
+  .pr-net{height:6px;background:var(--gray);border:1px solid var(--navy);border-radius:2px;margin-bottom:4px;}
+  .pr-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+  .pr-mini-cell{aspect-ratio:1/.85;border:1px solid var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);}
+  .pr-map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .pr-map{border:1px solid var(--line);border-radius:8px;padding:9px;break-inside:avoid;}
+  .pr-map h4{font-family:'Anton',sans-serif;font-size:13px;color:var(--navy);margin:0 0 2px;text-align:center;letter-spacing:.05em;}
+  .pr-map p{font-size:10px;color:#555;text-align:center;margin:0 0 6px;}
+  .pr-map-court{position:relative;border:2px solid var(--navy);border-top-width:7px;border-radius:2px 2px 5px 5px;background:#F6F3EC;padding:4px;}
+  .pr-map-cells{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;}
+  .pr-map-cell{aspect-ratio:1/.82;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;line-height:.9;color:var(--navy);}
+  .pr-map-cell .serve-percent{font-size:7px;}
+  .pr-map-overlay{position:absolute;inset:4px;pointer-events:none;z-index:2;}
+  .pr-map-passer{position:absolute;top:57%;transform:translate(-50%,-50%);min-width:18px;height:18px;padding:0 3px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:7px;}
+  .pr-map-passer.p1{left:76.25%;}.pr-map-passer.p2{left:50%;}.pr-map-passer.p3{left:23.75%;}
+  .pr-section{margin-bottom:22px;break-inside:avoid;}
+  .pr-section h3{font-family:'Anton',sans-serif;font-size:17px;color:var(--navy);margin:0 0 8px;}
+  table.pr-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;}
+  table.pr-table th, table.pr-table td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
+  table.pr-table th{background:var(--navy);color:#fff;font-weight:600;}
+  table.pr-table td:first-child, table.pr-table th:first-child{text-align:left;}
 </style>
 </head>
 <body>
 
-<header class="scoreboard">
-  <div class="scoreboard-row">
+<div class="screen-only">
+  <header>
     <div class="brand">
-      <span class="display">Billikens</span>
-      <span class="sub">Passing Tracker</span>
+      <div class="display">Serve Tracker</div>
+      <div class="sub">SLU Volleyball</div>
     </div>
-    <div class="header-right">
-      <button id="themeToggleBtn" class="theme-toggle" onclick="toggleTheme()" title="Switch between dark and light mode" aria-label="Toggle dark and light mode">🌙</button>
-      <div class="set-flip">
-        <div class="lbl">Recording</div>
-        <div class="val tnum" id="headerSetVal">SET 1</div>
+    <div class="header-controls">
+      <div class="opp-field">
+        <span>vs</span>
+        <input id="opponentInput" type="text" placeholder="Opponent name" />
+      </div>
+      <button class="btn btn-ghost" id="clearBtn" type="button">New Match</button>
+      <button class="btn btn-gold" id="exportBtn" type="button">Export PDF</button>
+    </div>
+  </header>
+
+  <nav class="tabnav">
+    <button class="tab-btn active" data-tab="track" type="button">Track</button>
+    <button class="tab-btn" data-tab="lineup" type="button">Players</button>
+    <button class="tab-btn" data-tab="maps" type="button">Reception Heat Maps</button>
+  </nav>
+
+  <main>
+    <!-- TRACK TAB -->
+    <div class="tab-panel active" id="tab-track">
+      <div class="track-grid">
+        <!-- LEFT: ENTRY -->
+        <section class="panel entry-panel">
+          <div class="entry-header">
+            <div>
+              <p class="eyebrow">Log serves</p>
+              <h2 style="margin:0;color:var(--navy);font-size:20px;">By Rotation</h2>
+            </div>
+            <div class="set-select-wrap">
+              <label for="entrySetSelect">Recording for</label>
+              <select id="entrySetSelect"></select>
+            </div>
+          </div>
+          <p class="hint">Pick a rotation, a seam, and a depth, then hit Enter. The rotation stays selected for the next serve — seam and depth clear so you don't log the same spot twice by accident.</p>
+
+          <div class="master-entry">
+            <p class="selector-label">Rotation</p>
+            <div class="selector-row" id="rotationRow"></div>
+            <p class="selector-label">Seam</p>
+            <div class="selector-row" id="seamRow"></div>
+            <p class="selector-label">Depth</p>
+            <div class="selector-row" id="depthRow"></div>
+            <button class="submit-btn" id="universalEnter" type="button" disabled>Enter</button>
+            <div class="last-logged" id="universalLast"></div>
+            <div class="undo-row">
+              <button class="undo-global-btn" id="globalUndoBtn" type="button" disabled>↺ Undo Last Serve</button>
+            </div>
+          </div>
+
+          <div class="pattern-card">
+            <p class="eyebrow" style="margin-bottom:2px;">Reception pattern</p>
+            <h2 style="margin:0 0 2px;color:var(--navy);font-size:16px;" id="patternTitle">Select a rotation above</h2>
+            <p class="hint" style="margin:2px 0 0;">Tap a circle to assign the passer standing in that seam gap.</p>
+            <div id="patternBody"></div>
+          </div>
+
+          <p class="selector-label">Rotation totals — <span id="rotTotalsSetLabel">Set 1</span></p>
+          <div class="rotation-grid" id="rotationGrid"></div>
+        </section>
+
+        <!-- RIGHT: HEAT MAP -->
+        <section class="panel heatmap-panel">
+          <p class="eyebrow">Where we're being served</p>
+          <div class="panel-title"><h2 id="heatmapTitle">Match Total</h2></div>
+
+          <div class="heat-filters">
+            <div class="field">
+              <label for="heatmapViewSelect">Set / Match</label>
+              <select id="heatmapViewSelect"></select>
+            </div>
+          </div>
+          <div class="heatmap-mode-toggle" aria-label="Heat map rotation view">
+            <button class="heatmap-mode-btn active" id="heatmapSelectedBtn" type="button">Selected rotation</button>
+            <button class="heatmap-mode-btn" id="heatmapAllBtn" type="button">All rotations</button>
+          </div>
+          <div class="heat-pattern-note" id="heatPatternNote">Select a rotation to display its reception pattern.</div>
+
+          <div class="court-wrap">
+            <div class="depth-labels"><div>A · Short</div><div>B · Medium</div><div>C · Deep</div></div>
+            <div class="court">
+              <div class="seam-labels" id="heatSeamLabels"></div>
+              <div class="net-wrap"><div class="net"></div></div>
+              <div class="court-surface">
+                <div class="attack-line"></div>
+                <div class="grid4x3" id="heatmapGrid"></div>
+                <div class="heat-pattern-overlay" id="heatPatternOverlay"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="legend"><span>Fewer</span><div class="bar"></div><span>More</span></div>
+
+          <div class="stat-row">
+            <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Serves shown</div></div>
+            <div class="stat"><div class="n" id="statHot">—</div><div class="l">Hot zone</div></div>
+          </div>
+        </section>
       </div>
     </div>
-  </div>
-</header>
 
-<nav class="tabs">
-  <button data-tab="tab1" class="active" onclick="switchTab('tab1')">Live Entry</button>
-  <button data-tab="tab2" onclick="switchTab('tab2')" id="tab2NavLabel">SLU Passing</button>
-  <button data-tab="tab3" onclick="switchTab('tab3')" id="tab3NavLabel">Opponent Passing</button>
-</nav>
-
-<main>
-
-  <!-- TAB 1: LIVE ENTRY -->
-  <section id="tab1" class="tabpanel active">
-    <div class="toolbar">
-      <div class="set-picker" id="setPicker"></div>
-      <button class="pill" id="undoBtn" onclick="undoLast()" disabled>↺ Undo Last Pass</button>
-      <button class="pill" id="exportPdfBtn" onclick="exportPDF()">⬇ Export PDF Summary</button>
-      <button class="pill" id="resetBtn" onclick="resetMatch()">New Match</button>
-      <a id="pdfFallbackLink" href="#" style="display:none;" class="pill" target="_blank" rel="noopener"></a>
-      <div id="lastActionToast"></div>
+    <!-- LINEUP TAB -->
+    <div class="tab-panel" id="tab-lineup">
+      <section class="panel">
+        <p class="eyebrow">Roster</p>
+        <h2 style="margin:0 0 6px;color:var(--navy);font-size:20px;">Players</h2>
+        <p class="hint" style="margin-top:0;">Add players using initials or jersey numbers. These names populate the reception-pattern dropdowns on the Track tab.</p>
+        <div id="rosterList"></div>
+        <button class="btn btn-gold add-player-btn" id="addPlayerBtn" type="button">+ Add Player</button>
+      </section>
     </div>
 
-    <div class="rosters">
-      <div class="roster-card" data-team="home">
-        <h2>Billikens</h2>
-        <div class="add-player-form">
-          <input id="homeNewPlayerInput" placeholder="Initials (e.g. JS)" maxlength="4" onkeydown="if(event.key==='Enter'){ event.preventDefault(); addPlayer('home'); }">
-          <button onclick="addPlayer('home')">Add Player</button>
-        </div>
-        <div id="homeRoster" class="roster-list"></div>
-      </div>
-
-      <div class="roster-card" data-team="away">
-        <h2><input id="awayTeamNameInput" placeholder="Opponent team name" oninput="updateAwayName(this.value)"></h2>
-        <div class="add-player-form">
-          <input id="awayNewPlayerInput" placeholder="Jersey #" maxlength="3" onkeydown="if(event.key==='Enter'){ event.preventDefault(); addPlayer('away'); }">
-          <button onclick="addPlayer('away')">Add Player</button>
-        </div>
-        <div id="awayRoster" class="roster-list"></div>
-      </div>
-    </div>
-
-    <div class="court-tracker-card">
-      <h2 class="court-tracker-title">Billikens — Timeouts &amp; Subs <span class="ct-set-note">(this set)</span></h2>
-      <div class="court-tracker-row">
-        <div class="court-tracker" id="timeoutTracker">
-          <div class="ct-label">Timeouts</div>
-          <div class="ct-controls">
-            <button class="ct-btn" id="timeoutMinusBtn" onclick="changeCourtTally('timeouts', -1)">−</button>
-            <div class="ct-count tnum" id="timeoutCount">0 / 2</div>
-            <button class="ct-btn" id="timeoutPlusBtn" onclick="changeCourtTally('timeouts', 1)">+</button>
+    <!-- RECEPTION HEAT MAPS TAB -->
+    <div class="tab-panel" id="tab-maps">
+      <section class="panel">
+        <div class="panel-title">
+          <h2>Serve Log — <span id="logSetLabel2">Set 1</span></h2>
+          <div class="set-select-wrap">
+            <label for="logSetSelect">Set</label>
+            <select id="logSetSelect"></select>
           </div>
         </div>
-        <div class="court-tracker" id="subTracker">
-          <div class="ct-label">Subs</div>
-          <div class="ct-controls">
-            <button class="ct-btn" id="subMinusBtn" onclick="changeCourtTally('subs', -1)">−</button>
-            <div class="ct-count tnum" id="subCount">0 / 15</div>
-            <button class="ct-btn" id="subPlusBtn" onclick="changeCourtTally('subs', 1)">+</button>
-          </div>
-        </div>
-      </div>
+        <div class="log-list" id="logList"></div>
+      </section>
     </div>
-  </section>
+  </main>
 
-  <!-- TAB 2: SLU PASSING -->
-  <section id="tab2" class="tabpanel">
-    <h1 class="panel-title display" style="font-size:20px;">SLU Passing</h1>
-    <div class="subnav">
-      <button class="subnav-btn active" onclick="switchPage('tab2','avg')">Match Averages</button>
-      <button class="subnav-btn" onclick="switchPage('tab2','log')">Attempt Log</button>
-    </div>
-    <div id="tab2-avg" class="subpage active"></div>
-    <div id="tab2-log" class="subpage"></div>
-  </section>
+<footer>Data is saved on this device automatically.</footer>
+</div>
 
-  <!-- TAB 3: OPPONENT PASSING -->
-  <section id="tab3" class="tabpanel">
-    <h1 class="panel-title display" style="font-size:20px;" id="tab3Title">Opponent Passing</h1>
-    <div class="subnav">
-      <button class="subnav-btn active" onclick="switchPage('tab3','avg')">Match Averages</button>
-      <button class="subnav-btn" onclick="switchPage('tab3','log')">Attempt Log</button>
-    </div>
-    <div id="tab3-avg" class="subpage active"></div>
-    <div id="tab3-log" class="subpage"></div>
-  </section>
-
-</main>
+<div id="printReport"></div>
+<div class="toast" id="toast"></div>
 
 <script>
-// ---------------------------------------------------------------
-// STATE
-// ---------------------------------------------------------------
-const TIMEOUT_LIMIT = 2;
-const SUB_LIMIT = 15;
+(function(){
+  const SEAMS = [4,3,2,1];
+  const SEAMS_HEAT_ORDER = [4,3,2,1];
+  const DEPTHS = ['a','b','c'];
+  const DEPTH_LABEL = {a:'A', b:'B', c:'C'};
+  const DEPTH_HINT = {a:'Short', b:'Medium', c:'Deep'};
+  const SETS = [1,2,3,4,5];
+  const ROTATIONS = [1,2,3,4,5,6];
+  const PASSER_SLOTS = ['p1','p2','p3'];
+  const PASSER_SLOT_LABEL = {p1:'Between Seam 1–2', p2:'Between Seam 2–3', p3:'Between Seam 3–4'};
+  const STORAGE_KEY = 'serve-tracker-state';
 
-function freshCourtTally(){
-  return { 1:0, 2:0, 3:0, 4:0, 5:0 };
-}
+  let state = { opponent:'', serves:[], roster:[], patterns:{} };
+  let entrySet = 1;
+  let heatmapView = 'match'; // 'set1'..'set5' or 'match'
+  let heatmapMode = 'selected'; // selected entry rotation or all rotations
+  let lastAdded = null;
+  const universalSelection = {rotation:null, seam:null, depth:null};
 
-const state = {
-  currentSet: 1,
-  teams: {
-    home: { name: 'Billikens', players: [], timeouts: freshCourtTally(), subs: freshCourtTally() },
-    away: { name: '', players: [] }
-  },
-  undoStack: [] // { team, playerId }
-};
-
-const SET_COLORS = { 1:'var(--s1)', 2:'var(--s2)', 3:'var(--s3)', 4:'var(--s4)', 5:'var(--s5)' };
-// RGB equivalents of the SET_COLORS hexes above, for use in the PDF (jsPDF can't read CSS variables)
-const SET_RGB = {
-  1: [45, 95, 163],   // #2D5FA3
-  2: [122, 79, 190],  // #7A4FBE
-  3: [30, 142, 126],  // #1E8E7E
-  4: [201, 121, 30],  // #C9791E
-  5: [194, 59, 107]   // #C23B6B
-};
-const SLU_BLUE_RGB = [0, 61, 165]; // official SLU Blue, PMS 293C
-const STORAGE_KEY = 'billikens-passing-tracker-state-v1';
-const THEME_KEY = 'billikens-passing-tracker-theme';
-
-function uid(){ return Math.random().toString(36).slice(2,10); }
-
-function findPlayer(team, id){
-  return state.teams[team].players.find(p => p.id === id);
-}
-
-function awayDisplayName(){
-  const n = state.teams.away.name.trim();
-  return n ? n : 'Opponent';
-}
-
-// ---------------------------------------------------------------
-// THEME (dark / light mode)
-// ---------------------------------------------------------------
-function currentTheme(){
-  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-}
-
-function applyTheme(theme){
-  if(theme === 'dark'){
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
+  function defaultRoster(){
+    return [
+      {id:'p1', label:'1'},
+      {id:'p2', label:'2'},
+      {id:'p3', label:'3'},
+      {id:'p4', label:'4'},
+      {id:'p5', label:'5'},
+      {id:'p6', label:'6'}
+    ];
   }
-  const btn = document.getElementById('themeToggleBtn');
-  if(btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-}
 
-function toggleTheme(){
-  const next = currentTheme() === 'dark' ? 'light' : 'dark';
-  applyTheme(next);
-  try{ localStorage.setItem(THEME_KEY, next); }catch(e){ /* storage unavailable */ }
-}
-
-// ---------------------------------------------------------------
-// PERSISTENCE (auto-save to this browser so a refresh doesn't lose data)
-// ---------------------------------------------------------------
-function saveState(){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }catch(e){
-    // Storage unavailable (e.g. private browsing, or an embedded preview
-    // that blocks it) — the app still works, it just won't persist.
-    console.warn('Could not save match data:', e);
+  function ensurePatternStructure(set){
+    if(!state.patterns[set]) state.patterns[set] = {};
+    ROTATIONS.forEach(r=>{
+      if(!state.patterns[set][r]) state.patterns[set][r] = {p1:null,p2:null,p3:null};
+    });
   }
-}
 
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return false;
-    const saved = JSON.parse(raw);
-    if(saved && saved.teams){
-      state.currentSet = saved.currentSet || 1;
-      state.teams = saved.teams;
-      state.undoStack = saved.undoStack || [];
-      // Backfill timeouts/subs for data saved before this feature existed
-      if(!state.teams.home.timeouts) state.teams.home.timeouts = freshCourtTally();
-      if(!state.teams.home.subs) state.teams.home.subs = freshCourtTally();
+  function copyForwardPatterns(newSet){
+    ensurePatternStructure(newSet);
+    for(let s = newSet-1; s>=1; s--){
+      if(state.patterns[s]){
+        const hasData = ROTATIONS.some(r=> state.patterns[s][r] && (state.patterns[s][r].p1 || state.patterns[s][r].p2 || state.patterns[s][r].p3));
+        if(hasData){
+          ROTATIONS.forEach(r=>{
+            state.patterns[newSet][r] = Object.assign({}, state.patterns[s][r]);
+          });
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // ---------- persistence ----------
+  function hasClaudeStorage(){
+    return typeof window !== 'undefined' && window.storage && typeof window.storage.get === 'function';
+  }
+  async function loadState(){
+    let loaded = false;
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(parsed && Array.isArray(parsed.serves)){ state = parsed; loaded = true; }
+      }
+    }catch(e){ console.error('Local storage read failed', e); }
+
+    if(!loaded && hasClaudeStorage()){
+      try{
+        const res = await window.storage.get(STORAGE_KEY, false);
+        if(res && res.value){
+          const parsed = JSON.parse(res.value);
+          if(parsed && Array.isArray(parsed.serves)){ state = parsed; }
+        }
+      }catch(e){ /* nothing saved there either */ }
+    }
+
+    if(!Array.isArray(state.roster) || state.roster.length===0) state.roster = defaultRoster();
+    if(!state.patterns) state.patterns = {};
+    ensurePatternStructure(entrySet);
+
+    renderAll();
+  }
+  async function saveState(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){
+      console.error('Local storage write failed', e);
+      showToast('Could not save on this device — data may be lost on reload');
+    }
+    if(hasClaudeStorage()){
+      try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }
+      catch(e){ /* secondary mirror only, ok to ignore */ }
+    }
+  }
+  // ---------- helpers ----------
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+  function filterServes({set, rotation}){
+    return state.serves.filter(s=>{
+      if(set !== undefined && s.set !== set) return false;
+      if(rotation !== undefined && s.rotation !== rotation) return false;
       return true;
+    });
+  }
+
+  function countMatrix(list){
+    const m = {};
+    SEAMS.forEach(sm=>{ m[sm] = {}; DEPTHS.forEach(d=> m[sm][d]=0 ); });
+    list.forEach(s=>{ if(m[s.seam] && m[s.seam][s.depth]!==undefined) m[s.seam][s.depth]++; });
+    return m;
+  }
+  function maxOf(matrix){
+    let mx = 0;
+    SEAMS.forEach(sm=> DEPTHS.forEach(d=> { if(matrix[sm][d] > mx) mx = matrix[sm][d]; }));
+    return mx;
+  }
+  function servePercent(count, total){
+    return total ? Math.round((count / total) * 100) + '%' : '0%';
+  }
+  function serveCellMarkup(count, total){
+    return `<span>${count}</span><span class="serve-percent">${servePercent(count,total)}</span>`;
+  }
+  function hexLerp(c1, c2, t){
+    const a = parseInt(c1.slice(1),16), b = parseInt(c2.slice(1),16);
+    const ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
+    const br=(b>>16)&255, bg=(b>>8)&255, bb=b&255;
+    const r = Math.round(ar+(br-ar)*t), g = Math.round(ag+(bg-ag)*t), bl = Math.round(ab+(bb-ab)*t);
+    return `rgb(${r},${g},${bl})`;
+  }
+  function heatColorFixed(count, max){
+    if(count===0) return '#E8EDF5';
+    const t = max>0 ? count/max : 0;
+    const lo = '#E8EDF5';
+    const hi = '#003DA5';
+    return hexLerp(lo, hi, Math.min(1, 0.28 + t*0.72));
+  }
+  function heatColor(count, max){ return heatColorFixed(count, max); }
+  function textColorFor(count, max){
+    // on-screen: null for zero-count lets the CSS ".count.zero" muted style show through
+    if(count===0) return null;
+    const t = max>0 ? count/max : 0;
+    return t > 0.55 ? '#FFFFFF' : 'var(--navy)';
+  }
+  function playerLabel(id){
+    if(!id) return null;
+    const p = state.roster.find(x=>x.id===id);
+    return p ? p.label : null;
+  }
+  function playerShort(id){
+    if(!id) return '';
+    const p = state.roster.find(x=>x.id===id);
+    return p ? p.label : '';
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._h);
+    showToast._h = setTimeout(()=> t.classList.remove('show'), 2000);
+  }
+
+  // ---------- tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+  });
+  function switchTab(name){
+    document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===name));
+    document.querySelectorAll('.tab-panel').forEach(p=> p.classList.toggle('active', p.id === 'tab-'+name));
+  }
+
+  // ---------- actions ----------
+  function addServe(rotation, seam, depth){
+    const pattern = patternFor(entrySet, rotation);
+    const patternSnapshot = {};
+    PASSER_SLOTS.forEach(slot=> patternSnapshot[slot] = pattern[slot] || null);
+    state.serves.push({id:uid(), set:entrySet, rotation, seam, depth, pattern:patternSnapshot, ts:Date.now()});
+    lastAdded = {rotation, seam, depth};
+    saveState();
+    renderAll();
+  }
+  function undoLastForRotation(rotation){
+    for(let i = state.serves.length-1; i>=0; i--){
+      const s = state.serves[i];
+      if(s.set===entrySet && s.rotation===rotation){
+        state.serves.splice(i,1);
+        saveState();
+        renderAll();
+        return;
+      }
     }
-  }catch(e){
-    console.warn('Could not load saved match data:', e);
   }
-  return false;
-}
-
-// ---------------------------------------------------------------
-// MUTATIONS
-// ---------------------------------------------------------------
-function addPlayer(team){
-  const inputId = team === 'home' ? 'homeNewPlayerInput' : 'awayNewPlayerInput';
-  const input = document.getElementById(inputId);
-  const label = input.value.trim().toUpperCase();
-  if(!label) return;
-  state.teams[team].players.push({ id: uid(), label, passes: [] });
-  input.value = '';
-  renderRoster(team);
-  renderStatsTables();
-  renderLogs();
-  saveState();
-}
-
-function removePlayer(team, id){
-  state.teams[team].players = state.teams[team].players.filter(p => p.id !== id);
-  state.undoStack = state.undoStack.filter(a => !(a.team===team && a.playerId===id));
-  renderRoster(team);
-  renderStatsTables();
-  renderLogs();
-  updateUndoButton();
-  saveState();
-}
-
-// Re-triggers the tap-confirm "pop" animation on an element, even if it was
-// just added a moment ago (e.g. a button re-created by a full roster re-render).
-function popButton(el){
-  if(!el) return;
-  el.classList.remove('btn-pop');
-  void el.offsetWidth; // force reflow so the animation restarts cleanly
-  el.classList.add('btn-pop');
-}
-
-function addPass(team, playerId, value){
-  const player = findPlayer(team, playerId);
-  if(!player) return;
-  player.passes.push({ set: state.currentSet, value, ts: Date.now() });
-  state.undoStack.push({ team, playerId });
-  renderRoster(team);
-  renderStatsTables();
-  renderLogs();
-  updateUndoButton();
-  const t = document.getElementById('lastActionToast');
-  t.innerHTML = `Last: <b>${player.label}</b> +${value} pt pass · Set ${state.currentSet}`;
-  saveState();
-  popButton(document.querySelector(`button[data-player="${playerId}"][data-value="${value}"]`));
-}
-
-function undoLast(){
-  const last = state.undoStack.pop();
-  if(!last) return;
-  const player = findPlayer(last.team, last.playerId);
-  if(!player){ updateUndoButton(); return; }
-  const removed = player.passes.pop();
-  renderRoster(last.team);
-  renderStatsTables();
-  renderLogs();
-  updateUndoButton();
-  popButton(document.getElementById('undoBtn'));
-  const t = document.getElementById('lastActionToast');
-  if(removed){
-    t.innerHTML = `Undid: <b>${player.label}</b> — ${removed.value} pt pass (Set ${removed.set})`;
+  function undoLastGlobal(){
+    if(state.serves.length===0) return;
+    state.serves.pop();
+    saveState();
+    renderAll();
+    showToast('Last serve undone');
   }
-  saveState();
-}
+  function deleteServe(id){
+    state.serves = state.serves.filter(s=>s.id!==id);
+    saveState();
+    renderAll();
+  }
+  function clearAll(){
+    if(confirm('Start a new match? This clears the opponent name, every logged serve, and all reception patterns. Your roster stays put. This cannot be undone.')){
+      const keepRoster = state.roster && state.roster.length ? state.roster : defaultRoster();
+      state = {opponent:'', serves:[], roster:keepRoster, patterns:{}};
+      entrySet = 1;
+      heatmapView = 'match';
+      heatmapMode = 'selected';
+      universalSelection.rotation = null;
+      universalSelection.seam = null;
+      universalSelection.depth = null;
+      ensurePatternStructure(entrySet);
+      saveState();
+      renderAll();
+      showToast('New match started');
+    }
+  }
 
-function updateUndoButton(){
-  document.getElementById('undoBtn').disabled = state.undoStack.length === 0;
-}
-
-function setCurrentSet(n){
-  state.currentSet = n;
-  document.querySelectorAll('#setPicker button').forEach(b=>{
-    b.classList.toggle('active', parseInt(b.dataset.set) === n);
-  });
-  document.getElementById('headerSetVal').textContent = 'SET ' + n;
-  renderCourtTracker();
-  saveState();
-}
-
-function updateAwayName(val){
-  state.teams.away.name = val;
-  document.getElementById('tab3NavLabel').textContent = awayDisplayName() + ' Passing';
-  document.getElementById('tab3Title').textContent = state.teams.away.name.trim()
-    ? awayDisplayName() + "'s Passing" : 'Opponent Passing';
-  saveState();
-}
-
-function resetMatch(){
-  if(!confirm('Start a new match? This clears all players, passes, timeouts, and subs.')) return;
-  state.currentSet = 1;
-  state.teams.home = { name:'Billikens', players: [], timeouts: freshCourtTally(), subs: freshCourtTally() };
-  state.teams.away = { name:'', players: [] };
-  state.undoStack = [];
-  document.getElementById('awayTeamNameInput').value = '';
-  updateAwayName('');
-  setCurrentSet(1);
-  renderRoster('home'); renderRoster('away');
-  renderStatsTables(); renderLogs(); updateUndoButton();
-  renderCourtTracker();
-  document.getElementById('lastActionToast').innerHTML = '';
-  saveState();
-}
-
-// ---------------------------------------------------------------
-// TIMEOUTS & SUBS (Billikens only, tracked per set)
-// ---------------------------------------------------------------
-function changeCourtTally(kind, delta){
-  const s = state.currentSet;
-  const limit = kind === 'timeouts' ? TIMEOUT_LIMIT : SUB_LIMIT;
-  const tally = state.teams.home[kind];
-  const next = (tally[s] || 0) + delta;
-  if(next < 0) return;
-  if(delta > 0 && next > limit) return;
-  tally[s] = next;
-  renderCourtTracker();
-  saveState();
-
-  const btnId = kind === 'timeouts'
-    ? (delta > 0 ? 'timeoutPlusBtn' : 'timeoutMinusBtn')
-    : (delta > 0 ? 'subPlusBtn' : 'subMinusBtn');
-  popButton(document.getElementById(btnId));
-}
-
-function renderCourtTracker(){
-  const s = state.currentSet;
-  const timeouts = state.teams.home.timeouts[s] || 0;
-  const subs = state.teams.home.subs[s] || 0;
-
-  const toEl = document.getElementById('timeoutCount');
-  const subEl = document.getElementById('subCount');
-  if(!toEl || !subEl) return; // not rendered yet
-
-  toEl.textContent = `${timeouts} / ${TIMEOUT_LIMIT}`;
-  subEl.textContent = `${subs} / ${SUB_LIMIT}`;
-
-  document.getElementById('timeoutMinusBtn').disabled = timeouts <= 0;
-  document.getElementById('timeoutPlusBtn').disabled = timeouts >= TIMEOUT_LIMIT;
-  document.getElementById('subMinusBtn').disabled = subs <= 0;
-  document.getElementById('subPlusBtn').disabled = subs >= SUB_LIMIT;
-
-  document.getElementById('timeoutTracker').classList.toggle('at-limit', timeouts >= TIMEOUT_LIMIT);
-  document.getElementById('subTracker').classList.toggle('at-limit', subs >= SUB_LIMIT);
-  document.getElementById('subTracker').classList.toggle('near-limit', subs > 10 && subs < SUB_LIMIT);
-}
-
-// ---------------------------------------------------------------
-// STATS
-// ---------------------------------------------------------------
-function computeStats(player){
-  const bySet = {};
-  for(let s=1;s<=5;s++) bySet[s] = { att:0, pts:0, avg:null };
-  let totalAtt=0, totalPts=0;
-  player.passes.forEach(p=>{
-    bySet[p.set].att++; bySet[p.set].pts += p.value;
-    totalAtt++; totalPts += p.value;
-  });
-  for(let s=1;s<=5;s++){ if(bySet[s].att) bySet[s].avg = bySet[s].pts / bySet[s].att; }
-  return { bySet, total: { att: totalAtt, pts: totalPts, avg: totalAtt ? totalPts/totalAtt : null } };
-}
-
-function getSetsWithData(team){
-  const used = new Set();
-  state.teams[team].players.forEach(p => p.passes.forEach(pass => used.add(pass.set)));
-  if(used.size === 0) return [1];
-  return Array.from(used).sort((a,b)=>a-b);
-}
-
-function fmtAvg(v){ return v===null || v===undefined ? '—' : v.toFixed(2); }
-
-function isStrugglingPasser(player){
-  // Flags a player if 3 or more of their last 4 passes were a 0 or a 1.
-  if(player.passes.length < 4) return false;
-  const last4 = player.passes.slice(-4);
-  const lowCount = last4.filter(p => p.value === 0 || p.value === 1).length;
-  return lowCount >= 3;
-}
-
-// ---------------------------------------------------------------
-// RENDER: ROSTER (Tab 1)
-// ---------------------------------------------------------------
-function sortedRosterForDisplay(team){
-  const players = state.teams[team].players.slice(); // copy — don't reorder the underlying data
-  if(team === 'home'){
-    // Billikens: alphabetical by initials
-    players.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
-  } else {
-    // Opponent: numeric by jersey number (non-numeric labels sort to the end)
-    players.sort((a, b) => {
-      const na = parseInt(a.label, 10);
-      const nb = parseInt(b.label, 10);
-      const va = isNaN(na) ? Infinity : na;
-      const vb = isNaN(nb) ? Infinity : nb;
-      if(va !== vb) return va - vb;
-      return a.label.localeCompare(b.label, undefined, { sensitivity: 'base' });
+  function changeEntrySet(newSet){
+    if(newSet === entrySet) return;
+    ensurePatternStructure(newSet);
+    const hasOwnData = ROTATIONS.some(r=>{
+      const p = state.patterns[newSet][r];
+      return p && (p.p1 || p.p2 || p.p3);
     });
-  }
-  return players;
-}
-
-function renderRoster(team){
-  const container = document.getElementById(team === 'home' ? 'homeRoster' : 'awayRoster');
-  const players = sortedRosterForDisplay(team);
-  if(players.length === 0){
-    container.innerHTML = `<div class="empty-note">No players added yet.</div>`;
-    return;
-  }
-  container.innerHTML = players.map(p => {
-    const stats = computeStats(p);
-    const struggling = isStrugglingPasser(p);
-    return `
-      <div class="player-row${struggling ? ' struggling' : ''}">
-        <div class="player-tag">${escapeHtml(p.label)}</div>
-        ${struggling ? `<span class="warn-triangle" title="3+ of last 4 passes were 0 or 1">⚠️</span>` : ''}
-        <div class="player-avg">
-          <div class="n tnum">${fmtAvg(stats.total.avg)}</div>
-          <div class="l">Avg</div>
-        </div>
-        <div class="pass-btns">
-          <button class="v0" data-player="${p.id}" data-value="0" onclick="addPass('${team}','${p.id}',0)">0</button>
-          <button class="v1" data-player="${p.id}" data-value="1" onclick="addPass('${team}','${p.id}',1)">1</button>
-          <button class="v2" data-player="${p.id}" data-value="2" onclick="addPass('${team}','${p.id}',2)">2</button>
-          <button class="v3" data-player="${p.id}" data-value="3" onclick="addPass('${team}','${p.id}',3)">3</button>
-        </div>
-        <button class="del-btn" onclick="removePlayer('${team}','${p.id}')" title="Remove player">×</button>
-      </div>
-    `;
-  }).join('');
-}
-
-function escapeHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ---------------------------------------------------------------
-// RENDER: AVERAGES TABLES (Tab 2 / Tab 3, page 1)
-// ---------------------------------------------------------------
-function renderStatsTables(){
-  renderAvgTable('home', 'tab2-avg');
-  renderAvgTable('away', 'tab3-avg');
-}
-
-function renderAvgTable(team, containerId){
-  const container = document.getElementById(containerId);
-  const players = state.teams[team].players;
-  const setsUsed = getSetsWithData(team);
-
-  if(players.length === 0){
-    container.innerHTML = `<div class="empty-state">Add players on Live Entry to see stats here.</div>`;
-    return;
+    entrySet = newSet;
+    if(!hasOwnData){
+      const copied = copyForwardPatterns(newSet);
+      if(copied){
+        showToast('Reception pattern carried over from the previous set');
+      }
+    }
+    renderAll();
   }
 
-  let html = `<div class="table-wrap"><table class="stats"><thead><tr><th>Player</th>`;
-  setsUsed.forEach(s => html += `<th>Set ${s}</th>`);
-  html += `<th>Total</th></tr></thead><tbody>`;
-
-  // per-player rows
-  const teamTotals = {};
-  setsUsed.forEach(s => teamTotals[s] = { att:0, pts:0 });
-  let teamAllAtt = 0, teamAllPts = 0;
-
-  players.forEach(p => {
-    const stats = computeStats(p);
-    html += `<tr><td>${escapeHtml(p.label)}</td>`;
-    setsUsed.forEach(s => {
-      const c = stats.bySet[s];
-      teamTotals[s].att += c.att; teamTotals[s].pts += c.pts;
-      html += `<td><span class="avg tnum">${fmtAvg(c.avg)}</span><span class="meta">${c.att} att · ${c.pts} pts</span></td>`;
-    });
-    teamAllAtt += stats.total.att; teamAllPts += stats.total.pts;
-    html += `<td class="total-cell"><span class="avg tnum">${fmtAvg(stats.total.avg)}</span><span class="meta">${stats.total.att} att · ${stats.total.pts} pts</span></td></tr>`;
-  });
-
-  // team total row
-  html += `<tr class="team-row"><td>TEAM</td>`;
-  setsUsed.forEach(s => {
-    const t = teamTotals[s];
-    const avg = t.att ? t.pts/t.att : null;
-    html += `<td><span class="avg tnum">${fmtAvg(avg)}</span><span class="meta">${t.att} att · ${t.pts} pts</span></td>`;
-  });
-  const teamAvg = teamAllAtt ? teamAllPts/teamAllAtt : null;
-  html += `<td class="total-cell"><span class="avg tnum">${fmtAvg(teamAvg)}</span><span class="meta">${teamAllAtt} att · ${teamAllPts} pts</span></td></tr>`;
-
-  html += `</tbody></table></div>`;
-  container.innerHTML = html;
-}
-
-// ---------------------------------------------------------------
-// RENDER: LOG PAGES (Tab 2 / Tab 3, page 2)
-// ---------------------------------------------------------------
-function getAllPassesChronological(team){
-  const entries = [];
-  state.teams[team].players.forEach(p => {
-    p.passes.forEach(pass => entries.push({ player: p, pass }));
-  });
-  entries.sort((a,b) => a.pass.ts - b.pass.ts);
-  return entries;
-}
-
-function renderLogs(){
-  renderLog('home', 'tab2-log');
-  renderLog('away', 'tab3-log');
-}
-
-function renderLog(team, containerId){
-  const container = document.getElementById(containerId);
-  const players = state.teams[team].players;
-
-  if(players.length === 0){
-    container.innerHTML = `<div class="empty-state">Add players on Live Entry to see the attempt log here.</div>`;
-    return;
+  // ---------- render: heat map ----------
+  function currentHeatList(){
+    let base;
+    if(heatmapView === 'match') base = state.serves.slice();
+    else base = filterServes({set: parseInt(heatmapView.replace('set',''),10)});
+    if(heatmapMode === 'selected' && universalSelection.rotation){
+      base = base.filter(s=> s.rotation === universalSelection.rotation);
+    }
+    return base;
   }
 
-  let html = `<div class="legend">`;
-  for(let s=1;s<=5;s++){
-    html += `<span><i style="background:${SET_COLORS[s]}"></i>Set ${s}</span>`;
-  }
-  html += `</div>`;
-
-  // Per-player breakdown
-  html += `<h3 class="log-section-heading">By Player</h3>`;
-  players.forEach(p => {
-    html += `<div class="log-player"><h3>${escapeHtml(p.label)} <span style="color:var(--placeholder);font-weight:600;">(${p.passes.length} attempts)</span></h3>`;
-    if(p.passes.length === 0){
-      html += `<div class="empty-note" style="padding:0;">No passes recorded yet.</div>`;
-    } else {
-      html += `<div class="chip-row">`;
-      p.passes.forEach(pass => {
-        html += `<div class="chip" style="background:${SET_COLORS[pass.set]}" title="Set ${pass.set}">${pass.value}</div>`;
+  function renderHeatFilters(){
+    const viewSel = document.getElementById('heatmapViewSelect');
+    if(!viewSel.dataset.built){
+      SETS.forEach(n=>{
+        const o = document.createElement('option'); o.value = 'set'+n; o.textContent = 'Set ' + n;
+        viewSel.appendChild(o);
       });
-      html += `</div>`;
+      const m = document.createElement('option'); m.value = 'match'; m.textContent = 'Match Total';
+      viewSel.appendChild(m);
+      viewSel.dataset.built = '1';
+      viewSel.onchange = ()=>{ heatmapView = viewSel.value; renderHeatmap(); };
     }
-    html += `</div>`;
-  });
+    viewSel.value = heatmapView;
 
-  // Full team log — every attempt from every player, most recent first
-  // (attempt #1 is the oldest, so it sits at the bottom of the stack)
-  html += `<h3 class="log-section-heading">Full Team Log</h3>`;
-  const entries = getAllPassesChronological(team);
-  if(entries.length === 0){
-    html += `<div class="empty-note" style="padding:0 0 14px;">No passes recorded yet.</div>`;
-  } else {
-    entries.forEach((e, i) => { e.number = i + 1; }); // true attempt order, before reversing for display
-    const displayEntries = entries.slice().reverse();
-    html += `<div class="table-wrap"><table class="team-log-table"><thead><tr><th>#</th><th>Player</th><th>Set</th><th>Value</th></tr></thead><tbody>`;
-    displayEntries.forEach(e => {
-      html += `<tr>
-        <td class="tl-idx">${e.number}</td>
-        <td class="tl-player">${escapeHtml(e.player.label)}</td>
-        <td><span class="set-tag" style="background:${SET_COLORS[e.pass.set]}">Set ${e.pass.set}</span></td>
-        <td><span class="chip" style="background:${SET_COLORS[e.pass.set]};display:inline-flex;">${e.pass.value}</span></td>
-      </tr>`;
-    });
-    html += `</tbody></table></div>`;
-  }
-
-  container.innerHTML = html;
-}
-
-// ---------------------------------------------------------------
-// TAB / PAGE NAVIGATION
-// ---------------------------------------------------------------
-function switchTab(tabId){
-  document.querySelectorAll('.tabpanel').forEach(el => el.classList.toggle('active', el.id === tabId));
-  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
-}
-
-function switchPage(tabId, page){
-  const avgId = tabId + '-avg', logId = tabId + '-log';
-  document.getElementById(avgId).classList.toggle('active', page === 'avg');
-  document.getElementById(logId).classList.toggle('active', page === 'log');
-  const nav = document.getElementById(avgId).parentElement.querySelector('.subnav');
-  nav.querySelectorAll('.subnav-btn').forEach((b,i) => b.classList.toggle('active', (i===0 && page==='avg') || (i===1 && page==='log')));
-}
-
-// ---------------------------------------------------------------
-// PDF EXPORT
-// ---------------------------------------------------------------
-function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
-  const marginX = 40;
-  let y = 50;
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(18);
-  doc.setTextColor(...SLU_BLUE_RGB);
-  doc.text('Billikens Passing Report', marginX, y);
-  doc.setTextColor(20);
-  y += 18;
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, marginX, y);
-  doc.text(`Current set: ${state.currentSet}`, 430, y);
-  y += 22;
-  doc.setTextColor(20);
-
-  // Page 1: match averages for both teams
-  y = drawTeamSection(doc, 'home', 'Billikens', y);
-  y += 26;
-  if(y > 660){ doc.addPage(); y = 50; }
-  y = drawTeamSection(doc, 'away', awayDisplayName(), y);
-
-  // Page 2+: per-player attempt log breakdown for both teams
-  doc.addPage();
-  y = 50;
-  doc.setFont('helvetica','bold'); doc.setFontSize(16);
-  doc.setTextColor(...SLU_BLUE_RGB);
-  doc.text('Attempt Logs by Player', marginX, y);
-  doc.setTextColor(20);
-  y += 16;
-  y = drawSetLegend(doc, marginX, y);
-  y += 14;
-
-  y = drawTeamLog(doc, 'home', 'Billikens', y);
-  y += 20;
-  if(y > 660){ doc.addPage(); y = 50; }
-  y = drawTeamLog(doc, 'away', awayDisplayName(), y);
-
-  // Page 3+: full team log (chronological, all players merged) for both teams
-  doc.addPage();
-  y = 50;
-  doc.setFont('helvetica','bold'); doc.setFontSize(16);
-  doc.setTextColor(...SLU_BLUE_RGB);
-  doc.text('Full Team Log', marginX, y);
-  doc.setTextColor(20);
-  y += 16;
-  y = drawSetLegend(doc, marginX, y);
-  y += 14;
-
-  y = drawFullTeamLog(doc, 'home', 'Billikens', y);
-  y += 20;
-  if(y > 660){ doc.addPage(); y = 50; }
-  y = drawFullTeamLog(doc, 'away', awayDisplayName(), y);
-
-  const filename = 'billikens-passing-report-' + new Date().toISOString().slice(0,10) + '.pdf';
-  openOrDownloadPdf(doc, filename);
-}
-
-function drawFullTeamLog(doc, team, title, y){
-  const marginX = 40;
-  const entries = getAllPassesChronological(team); // attempt #1 first — order preserved for the PDF
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(13);
-  doc.setTextColor(...SLU_BLUE_RGB);
-  doc.text(title + ' Passing — Full Team Log', marginX, y);
-  doc.setTextColor(20);
-  y += 16;
-
-  if(entries.length === 0){
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text('No passes recorded.', marginX, y);
-    return y + 14;
-  }
-
-  entries.forEach((e, i) => { e.number = i + 1; });
-
-  // Two side-by-side columns: left column holds the first half of attempts
-  // (starting at #1), right column continues where it left off.
-  const colWidth = 250;
-  const colGap = 32;
-  const leftX = marginX;
-  const rightX = marginX + colWidth + colGap;
-  const fieldWidths = [20, 78, 55, 40]; // #, Player, Set, Value
-  const rowHeight = 14;
-  const pageBottom = 758;
-  const topOfSection = y;
-
-  const half = Math.ceil(entries.length / 2);
-  const leftEntries = entries.slice(0, half);
-  const rightEntries = entries.slice(half);
-
-  function drawColumnHeader(x, headerY){
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(20);
-    let cx = x;
-    ['#','Player','Set','Value'].forEach((h,i) => { doc.text(h, cx, headerY); cx += fieldWidths[i]; });
-    doc.setDrawColor(180); doc.setLineWidth(0.7);
-    const totalW = fieldWidths.reduce((a,b) => a+b, 0);
-    doc.line(x, headerY + 4, x + totalW, headerY + 4);
-  }
-
-  function drawRow(entry, x, rowY){
-    let cx = x;
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(20);
-    doc.text(String(entry.number), cx, rowY); cx += fieldWidths[0];
-    doc.text(entry.player.label, cx, rowY); cx += fieldWidths[1];
-    doc.text('Set ' + entry.pass.set, cx, rowY); cx += fieldWidths[2];
-
-    doc.setFillColor(...SET_RGB[entry.pass.set]);
-    doc.roundedRect(cx, rowY - 9, 17, 12, 2, 2, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
-    doc.text(String(entry.pass.value), cx + 8.5, rowY - 1, { align: 'center' });
-    doc.setFont('helvetica','normal'); doc.setTextColor(20);
-  }
-
-  drawColumnHeader(leftX, topOfSection);
-  drawColumnHeader(rightX, topOfSection);
-
-  let yLeft = topOfSection + 18;
-  let yRight = topOfSection + 18;
-  const maxRows = Math.max(leftEntries.length, rightEntries.length);
-
-  for(let i = 0; i < maxRows; i++){
-    if(yLeft > pageBottom || yRight > pageBottom){
-      doc.addPage();
-      const newHeaderY = 50;
-      drawColumnHeader(leftX, newHeaderY);
-      drawColumnHeader(rightX, newHeaderY);
-      yLeft = newHeaderY + 18;
-      yRight = newHeaderY + 18;
+    const selectedBtn = document.getElementById('heatmapSelectedBtn');
+    const allBtn = document.getElementById('heatmapAllBtn');
+    selectedBtn.classList.toggle('active', heatmapMode === 'selected');
+    allBtn.classList.toggle('active', heatmapMode === 'all');
+    if(!selectedBtn.dataset.built){
+      selectedBtn.onclick = ()=>{ heatmapMode = 'selected'; renderHeatFilters(); renderHeatmap(); };
+      allBtn.onclick = ()=>{ heatmapMode = 'all'; renderHeatFilters(); renderHeatmap(); };
+      selectedBtn.dataset.built = '1';
     }
-    if(leftEntries[i]){ drawRow(leftEntries[i], leftX, yLeft); yLeft += rowHeight; }
-    if(rightEntries[i]){ drawRow(rightEntries[i], rightX, yRight); yRight += rowHeight; }
+
   }
 
-  return Math.max(yLeft, yRight) + 6;
-}
-
-function drawSetLegend(doc, marginX, y){
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-  let x = marginX;
-  for(let s=1; s<=5; s++){
-    doc.setFillColor(...SET_RGB[s]);
-    doc.roundedRect(x, y - 8, 9, 9, 1.5, 1.5, 'F');
-    doc.setTextColor(80);
-    doc.text('Set ' + s, x + 13, y);
-    x += 55;
-  }
-  doc.setTextColor(20);
-  return y;
-}
-
-function openOrDownloadPdf(doc, filename){
-  // Sandboxed previews (like the in-chat viewer) can block a forced file
-  // download, so open the PDF in a new tab instead — from there it can be
-  // saved via the browser's Share / Save menu. This also works normally
-  // once the file is opened directly in Safari.
-  const blob = doc.output('blob');
-  const blobUrl = URL.createObjectURL(blob);
-  const fallback = document.getElementById('pdfFallbackLink');
-
-  let opened = null;
-  try{
-    opened = window.open(blobUrl, '_blank');
-  }catch(e){
-    opened = null;
-  }
-
-  if(!opened || opened.closed){
-    // Popup was blocked — show a manual link the user can tap themselves.
-    fallback.href = blobUrl;
-    fallback.download = filename;
-    fallback.textContent = '📄 Tap here to open your PDF';
-    fallback.style.display = 'inline-block';
-  } else {
-    fallback.style.display = 'none';
-  }
-}
-
-function drawTeamSection(doc, team, title, y){
-  const marginX = 40;
-  const players = state.teams[team].players;
-  const setsUsed = getSetsWithData(team);
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(13);
-  doc.setTextColor(...SLU_BLUE_RGB);
-  doc.text(title + ' Passing', marginX, y);
-  doc.setTextColor(20);
-  y += 16;
-
-  if(players.length === 0){
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text('No players recorded.', marginX, y);
-    return y + 14;
-  }
-
-  const colWidths = [90, ...setsUsed.map(()=>72), 90];
-  const headers = ['Player', ...setsUsed.map(s => 'Set ' + s), 'Total'];
-
-  doc.setFontSize(9); doc.setFont('helvetica','bold');
-  let x = marginX;
-  headers.forEach((h,i) => { doc.text(h, x, y); x += colWidths[i]; });
-  y += 5;
-  doc.setDrawColor(180); doc.setLineWidth(0.7);
-  doc.line(marginX, y, x, y);
-  y += 13;
-
-  doc.setFont('helvetica','normal');
-  const teamTotals = {}; setsUsed.forEach(s => teamTotals[s] = {att:0,pts:0});
-  let teamAllAtt=0, teamAllPts=0;
-
-  players.forEach(p => {
-    const stats = computeStats(p);
-    let x = marginX;
-    doc.text(p.label, x, y); x += colWidths[0];
-    setsUsed.forEach((s,i) => {
-      const c = stats.bySet[s];
-      teamTotals[s].att += c.att; teamTotals[s].pts += c.pts;
-      const txt = c.att ? `${c.avg.toFixed(2)} (${c.att}/${c.pts})` : '-';
-      doc.text(txt, x, y); x += colWidths[i+1];
+  function renderHeatSeamLabels(){
+    const wrap = document.getElementById('heatSeamLabels');
+    wrap.innerHTML = '';
+    SEAMS_HEAT_ORDER.forEach(sm=>{
+      const d = document.createElement('div');
+      d.textContent = 'Seam ' + sm;
+      wrap.appendChild(d);
     });
-    teamAllAtt += stats.total.att; teamAllPts += stats.total.pts;
-    const totTxt = stats.total.att ? `${stats.total.avg.toFixed(2)} (${stats.total.att}/${stats.total.pts})` : '-';
-    doc.text(totTxt, x, y);
-    y += 15;
-    if(y > 760){ doc.addPage(); y = 50; }
-  });
-
-  doc.setFont('helvetica','bold');
-  let xTeam = marginX;
-  doc.text('TEAM', xTeam, y); xTeam += colWidths[0];
-  setsUsed.forEach((s,i) => {
-    const t = teamTotals[s];
-    const avg = t.att ? t.pts/t.att : null;
-    const txt = t.att ? `${avg.toFixed(2)} (${t.att}/${t.pts})` : '-';
-    doc.text(txt, xTeam, y); xTeam += colWidths[i+1];
-  });
-  const teamAvg = teamAllAtt ? teamAllPts/teamAllAtt : null;
-  const teamTxt = teamAllAtt ? `${teamAvg.toFixed(2)} (${teamAllAtt}/${teamAllPts})` : '-';
-  doc.text(teamTxt, xTeam, y);
-  y += 14;
-
-  return y;
-}
-
-function drawTeamLog(doc, team, title, y){
-  const marginX = 40;
-  const pageRightEdge = 572; // letter width (612pt) minus right margin
-  const chip = 15;      // chip width/height
-  const chipGap = 4;    // gap between chips
-  const rowGap = 12;    // gap between a player's chip row and the next player
-  const players = state.teams[team].players;
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(13);
-  doc.setTextColor(...SLU_BLUE_RGB);
-  doc.text(title + ' Passing — Attempt Log', marginX, y);
-  doc.setTextColor(20);
-  y += 18;
-
-  if(players.length === 0){
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text('No players recorded.', marginX, y);
-    return y + 14;
   }
 
-  players.forEach(p => {
-    if(y > 730){ doc.addPage(); y = 50; }
-
-    doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(20);
-    doc.text(`${p.label}`, marginX, y);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(110);
-    doc.text(`${p.passes.length} attempt${p.passes.length === 1 ? '' : 's'}`, marginX + 34, y);
-    doc.setTextColor(20);
-    y += 6;
-
-    if(p.passes.length === 0){
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(140);
-      doc.text('No passes recorded.', marginX, y + 12);
-      doc.setTextColor(20);
-      y += rowGap + 14;
+  function patternFor(set, rotation){
+    const setPatterns = state.patterns && state.patterns[set];
+    return (setPatterns && setPatterns[rotation]) || {p1:null,p2:null,p3:null};
+  }
+  function patternOverlayMarkup(pattern, className){
+    return PASSER_SLOTS.map(slot=>{
+      const label = playerShort(pattern[slot]);
+      return label ? `<div class="${className} ${slot}">${label}</div>` : '';
+    }).join('');
+  }
+  function renderHeatPatternOverlay(){
+    const overlay = document.getElementById('heatPatternOverlay');
+    const note = document.getElementById('heatPatternNote');
+    if(!overlay) return;
+    if(heatmapMode === 'all'){
+      overlay.innerHTML = '';
+      if(note) note.textContent = 'All rotations are combined; no single reception pattern is overlaid.';
       return;
     }
+    const rotation = universalSelection.rotation;
+    if(!rotation){
+      overlay.innerHTML = '';
+      if(note) note.textContent = 'Select a rotation to display its reception pattern.';
+      return;
+    }
+    overlay.innerHTML = patternOverlayMarkup(patternFor(entrySet, rotation), 'heat-passer');
+    if(note) note.textContent = `Reception pattern: Set ${entrySet}, Rotation ${rotation}`;
+  }
+  function receptionGroups(){
+    const groups = new Map();
+    state.serves.forEach(serve=>{
+      const pattern = serve.pattern || patternFor(serve.set, serve.rotation);
+      const key = [serve.rotation].concat(PASSER_SLOTS.map(slot=>pattern[slot] || '')).join('|');
+      if(!groups.has(key)) groups.set(key, {rotation:serve.rotation, pattern, serves:[], sets:new Set()});
+      const group = groups.get(key);
+      group.serves.push(serve);
+      group.sets.add(serve.set);
+    });
+    return Array.from(groups.values()).sort((a,b)=>a.rotation-b.rotation || Math.min(...a.sets)-Math.min(...b.sets));
+  }
+  function heatMapCardMarkup(title, pattern, list, detail, print){
+    const matrix = countMatrix(list), max = maxOf(matrix);
+    const prefix = print ? 'pr-map' : 'map';
+    let cells = '';
+    DEPTHS.forEach(d=> SEAMS_HEAT_ORDER.forEach(sm=>{
+      const count = matrix[sm][d];
+      const fg = count && count/max > .55 ? '#fff' : '#00244D';
+      cells += `<div class="${prefix}${print ? '-cell' : '-cell'}" style="background:${heatColorFixed(count,max)};color:${fg}">${serveCellMarkup(count,list.length)}</div>`;
+    }));
+    const overlayClass = print ? 'pr-map-passer' : 'map-passer';
+    const courtClass = print ? 'pr-map-court' : 'map-court';
+    const gridClass = print ? 'pr-map-cells' : 'map-grid';
+    return `<div class="${prefix}"><h4>${title}</h4><p>${detail}</p><div class="${courtClass}"><div class="${gridClass}">${cells}</div><div class="${print ? 'pr-map-overlay' : 'map-overlay'}">${pattern ? patternOverlayMarkup(pattern, overlayClass) : ''}</div></div></div>`;
+  }
+  function heatMapViews(){
+    const views = [];
+    if(state.serves.length){
+      views.push({type:'total', title:'Match Total', detail:`${state.serves.length} serves · all rotations`, serves:state.serves, pattern:null});
+    }
+    SETS.forEach(set=>{
+      const serves = filterServes({set});
+      if(serves.length) views.push({type:'total', title:'Set '+set+' Total', detail:`${serves.length} serves · all rotations`, serves, pattern:null});
+    });
+    receptionGroups().forEach(group=>{
+      const sets = Array.from(group.sets).sort((a,b)=>a-b).map(set=>'Set '+set).join(', ');
+      views.push({type:'pattern', title:'Rotation '+group.rotation, detail:`${sets} · ${group.serves.length} serve${group.serves.length===1?'':'s'}`, serves:group.serves, pattern:group.pattern});
+    });
+    return views;
+  }
+  function renderPatternMaps(){
+    const section = document.querySelector('#tab-maps section');
+    if(!section) return;
+    section.innerHTML = '<div class="panel-title"><h2>Reception Heat Maps</h2></div><p class="hint" style="margin-top:0;">Match and set totals are separated from the unique reception-pattern maps.</p><div class="map-sections"><div class="map-section"><h3>Match &amp; Set Totals</h3><div class="map-gallery" id="totalHeatMapGallery"></div></div><div class="map-section"><h3>Reception Pattern &amp; Rotation</h3><div class="map-gallery" id="patternMapGallery"></div></div></div>';
+    const totalGallery = document.getElementById('totalHeatMapGallery');
+    const patternGallery = document.getElementById('patternMapGallery');
+    const views = heatMapViews();
+    const totals = views.filter(v=>v.type==='total');
+    const patterns = views.filter(v=>v.type==='pattern');
+    totalGallery.innerHTML = totals.length ? totals.map(v=>heatMapCardMarkup(v.title,v.pattern,v.serves,v.detail,false)).join('') : '<p class="maps-empty">No serves have been logged yet.</p>';
+    patternGallery.innerHTML = patterns.length ? patterns.map(v=>heatMapCardMarkup(v.title,v.pattern,v.serves,v.detail,false)).join('') : '<p class="maps-empty">No reception patterns have serves logged yet.</p>';
+  }
 
-    y += 14; // room for first chip row
-    let x = marginX;
+  function renderHeatmap(){
+    const list = currentHeatList();
+    const matrix = countMatrix(list);
+    const max = maxOf(matrix);
+    const setLabel = heatmapView==='match' ? 'Match Total' : ('Set ' + heatmapView.replace('set',''));
+    const rotLabel = heatmapMode === 'all' ? ' · All Rotations' : (universalSelection.rotation ? (' · Rotation ' + universalSelection.rotation) : ' · Select a Rotation');
+    document.getElementById('heatmapTitle').textContent = setLabel + rotLabel;
 
-    p.passes.forEach(pass => {
-      if(x + chip > pageRightEdge){ x = marginX; y += chip + chipGap; }
-      if(y > 760){ doc.addPage(); y = 50; x = marginX; }
-
-      doc.setFillColor(...SET_RGB[pass.set]);
-      doc.roundedRect(x, y - chip, chip, chip, 2.5, 2.5, 'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
-      doc.text(String(pass.value), x + chip/2, y - chip/2 + 3, { align: 'center' });
-      doc.setTextColor(20);
-
-      x += chip + chipGap;
+    const grid = document.getElementById('heatmapGrid');
+    grid.innerHTML = '';
+    DEPTHS.forEach(d=>{
+      SEAMS_HEAT_ORDER.forEach(sm=>{
+        const count = matrix[sm][d];
+        const cell = document.createElement('div');
+        cell.className = 'cell' + (count===max && count>0 ? ' hot' : '');
+        cell.style.background = heatColor(count, max);
+        cell.title = 'Seam ' + sm + DEPTH_LABEL[d] + ' (' + DEPTH_HINT[d] + '): ' + servePercent(count,list.length) + ' (' + count + ' serve' + (count===1?'':'s') + ')';
+        const c = document.createElement('span');
+        c.className = 'count' + (count===0 ? ' zero' : '');
+        c.innerHTML = serveCellMarkup(count,list.length);
+        const tc = textColorFor(count, max);
+        if(tc) c.style.color = tc;
+        cell.appendChild(c);
+        grid.appendChild(cell);
+      });
     });
 
-    y += rowGap + 4;
+    document.getElementById('statTotal').textContent = list.length;
+    let hotLabel = '—';
+    if(max > 0){
+      outer:
+      for(const d of DEPTHS){
+        for(const sm of SEAMS_HEAT_ORDER){
+          if(matrix[sm][d]===max){ hotLabel = 'Seam ' + sm + DEPTH_LABEL[d]; break outer; }
+        }
+      }
+    }
+    document.getElementById('statHot').textContent = hotLabel;
+    renderHeatPatternOverlay();
+  }
+
+  // ---------- render: master entry ----------
+  function renderEntrySetSelect(){
+    const sel = document.getElementById('entrySetSelect');
+    if(!sel.dataset.built){
+      SETS.forEach(n=>{
+        const o = document.createElement('option'); o.value = n; o.textContent = 'Set ' + n;
+        sel.appendChild(o);
+      });
+      sel.dataset.built = '1';
+      sel.onchange = ()=> changeEntrySet(parseInt(sel.value,10));
+    }
+    sel.value = entrySet;
+  }
+
+  function renderMasterEntry(){
+    const rotRow = document.getElementById('rotationRow');
+    const seamRow = document.getElementById('seamRow');
+    const depthRow = document.getElementById('depthRow');
+
+    if(!rotRow.dataset.built){
+      ROTATIONS.forEach(r=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'rotation-btn';
+        b.textContent = 'R' + r;
+        b.onclick = ()=>{ universalSelection.rotation = r; updateMasterEntry(); renderPattern(); renderHeatFilters(); renderHeatmap(); };
+        rotRow.appendChild(b);
+      });
+      SEAMS.forEach(sm=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'seam-btn';
+        b.textContent = sm;
+        b.onclick = ()=>{ universalSelection.seam = sm; updateMasterEntry(); };
+        seamRow.appendChild(b);
+      });
+      DEPTHS.forEach(d=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'depth-btn';
+        b.innerHTML = '<span class="letter">'+DEPTH_LABEL[d]+'</span><span class="hint-word">'+DEPTH_HINT[d]+'</span>';
+        b.dataset.depth = d;
+        b.onclick = ()=>{ universalSelection.depth = d; updateMasterEntry(); };
+        depthRow.appendChild(b);
+      });
+      document.getElementById('universalEnter').onclick = ()=>{
+        const s = universalSelection;
+        if(!(s.rotation && s.seam && s.depth)) return;
+        const rotation = s.rotation, seam = s.seam, depth = s.depth;
+        universalSelection.seam = null;
+        universalSelection.depth = null;
+        addServe(rotation, seam, depth);
+      };
+      document.getElementById('globalUndoBtn').onclick = undoLastGlobal;
+      rotRow.dataset.built = '1';
+    }
+    updateMasterEntry();
+    document.getElementById('globalUndoBtn').disabled = state.serves.length === 0;
+  }
+
+  function updateMasterEntry(){
+    const s = universalSelection;
+    document.querySelectorAll('#rotationRow .rotation-btn').forEach((b,i)=>{
+      b.classList.toggle('active', s.rotation === ROTATIONS[i]);
+    });
+    document.querySelectorAll('#seamRow .seam-btn').forEach((b,i)=>{
+      b.classList.toggle('active', s.seam === SEAMS[i]);
+    });
+    document.querySelectorAll('#depthRow .depth-btn').forEach(b=>{
+      b.classList.toggle('active', s.depth === b.dataset.depth);
+    });
+    document.getElementById('universalEnter').disabled = !(s.rotation && s.seam && s.depth);
+  }
+
+  // ---------- render: reception pattern ----------
+  function renderPattern(){
+    const title = document.getElementById('patternTitle');
+    const body = document.getElementById('patternBody');
+    const r = universalSelection.rotation;
+    if(!r){
+      title.textContent = 'Select a rotation above';
+      body.innerHTML = '<p class="pattern-empty-msg">Pick a rotation in the entry panel to view or edit its reception pattern.</p>';
+      return;
+    }
+    title.textContent = 'Rotation ' + r + ' · Set ' + entrySet;
+    ensurePatternStructure(entrySet);
+    const pattern = state.patterns[entrySet][r];
+
+    body.innerHTML = `
+      <div class="pattern-track">
+        <div class="pattern-seamline"></div>
+        <div class="passer-wrap" data-slot="p1"></div>
+        <div class="passer-wrap" data-slot="p2"></div>
+        <div class="passer-wrap" data-slot="p3"></div>
+      </div>
+      <div class="pattern-seam-tags"><div>4–3</div><div>3–2</div><div>2–1</div></div>
+    `;
+
+    PASSER_SLOTS.forEach(slot=>{
+      const wrap = body.querySelector('.passer-wrap[data-slot="'+slot+'"]');
+      const playerId = pattern[slot];
+      const label = playerShort(playerId);
+      const circle = document.createElement('div');
+      circle.className = 'passer-circle' + (playerId ? '' : ' empty');
+      circle.textContent = label || '+';
+      wrap.appendChild(circle);
+
+      const select = document.createElement('select');
+      select.className = 'passer-select';
+      select.title = PASSER_SLOT_LABEL[slot];
+      const noneOpt = document.createElement('option');
+      noneOpt.value = ''; noneOpt.textContent = 'Unassigned';
+      select.appendChild(noneOpt);
+      state.roster.forEach(p=>{
+        const o = document.createElement('option');
+        o.value = p.id; o.textContent = p.label;
+        if(p.id === playerId) o.selected = true;
+        select.appendChild(o);
+      });
+      select.onchange = ()=>{
+        state.patterns[entrySet][r][slot] = select.value || null;
+        saveState();
+        renderPattern();
+      };
+      wrap.appendChild(select);
+    });
+  }
+
+  // ---------- render: rotation totals ----------
+  function renderRotationPanels(){
+    document.getElementById('rotTotalsSetLabel').textContent = 'Set ' + entrySet;
+    const wrap = document.getElementById('rotationGrid');
+    wrap.innerHTML = '';
+    ROTATIONS.forEach(r=>{
+      const list = filterServes({set:entrySet, rotation:r}).slice().sort((a,b)=>b.ts-a.ts);
+      const card = document.createElement('div');
+      card.className = 'rotation-card';
+      card.dataset.rotation = r;
+
+      const head = document.createElement('div');
+      head.className = 'rc-head';
+      head.innerHTML = `<span class="rname">Rotation ${r}</span><span class="rtotal">${list.length} srv</span>`;
+      card.appendChild(head);
+
+      const lastEl = document.createElement('div');
+      lastEl.className = 'last-logged';
+      lastEl.style.marginTop = '0';
+      lastEl.style.textAlign = 'left';
+      lastEl.textContent = list[0] ? `Last: Seam ${list[0].seam}${DEPTH_LABEL[list[0].depth]} (${DEPTH_HINT[list[0].depth]})` : 'No serves logged yet';
+      card.appendChild(lastEl);
+
+      const undo = document.createElement('button');
+      undo.className = 'undo-btn';
+      undo.textContent = 'Undo last';
+      undo.disabled = list.length === 0;
+      undo.onclick = ()=> undoLastForRotation(r);
+      card.appendChild(undo);
+
+      wrap.appendChild(card);
+    });
+  }
+
+  // ---------- render: lineup tab ----------
+  function renderRoster(){
+    const wrap = document.getElementById('rosterList');
+    wrap.innerHTML = '';
+    state.roster.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'roster-row';
+
+      const input = document.createElement('input');
+      input.type = 'text'; input.maxLength = 6; input.value = p.label;
+      input.placeholder = 'Initials or #';
+      input.oninput = ()=>{ p.label = input.value; saveState(); renderPattern(); };
+
+      const del = document.createElement('button');
+      del.className = 'del-btn'; del.innerHTML = '&times;'; del.title = 'Remove player';
+      del.onclick = ()=>{
+        state.roster = state.roster.filter(x=>x.id !== p.id);
+        saveState();
+        renderRoster();
+        renderPattern();
+      };
+
+      row.appendChild(input);
+      row.appendChild(del);
+      wrap.appendChild(row);
+    });
+  }
+  document.getElementById('addPlayerBtn').addEventListener('click', ()=>{
+    state.roster.push({id:uid(), label:''});
+    saveState();
+    renderRoster();
   });
 
-  return y;
-}
+  // ---------- render: log tab ----------
+  function renderLogTab(){
+    const sel = document.getElementById('logSetSelect');
+    if(!sel.dataset.built){
+      SETS.forEach(n=>{
+        const o = document.createElement('option'); o.value = n; o.textContent = 'Set ' + n;
+        sel.appendChild(o);
+      });
+      sel.dataset.built = '1';
+      sel.onchange = ()=>{ renderLogTab(); };
+    }
+    if(document.activeElement !== sel) sel.value = entrySet;
+    const logSet = parseInt(sel.value,10);
+    document.getElementById('logSetLabel2').textContent = 'Set ' + logSet;
 
-// ---------------------------------------------------------------
-// INIT
-// ---------------------------------------------------------------
-function initSetPicker(){
-  const picker = document.getElementById('setPicker');
-  picker.innerHTML = '';
-  for(let s=1;s<=5;s++){
-    const btn = document.createElement('button');
-    btn.textContent = 'Set ' + s;
-    btn.dataset.set = s;
-    if(s === state.currentSet) btn.classList.add('active');
-    btn.onclick = () => setCurrentSet(s);
-    picker.appendChild(btn);
+    const list = filterServes({set:logSet}).slice().sort((a,b)=>b.ts-a.ts);
+    const el = document.getElementById('logList');
+    el.innerHTML = '';
+    if(list.length===0){
+      el.innerHTML = '<div class="log-empty">No serves logged for this set yet.</div>';
+      return;
+    }
+    list.forEach(s=>{
+      const row = document.createElement('div');
+      row.className = 'log-row';
+      row.innerHTML = `<span><span class="tag">R${s.rotation}</span>Seam ${s.seam}${DEPTH_LABEL[s.depth]} <span style="color:var(--muted);">(${DEPTH_HINT[s.depth]})</span></span>`;
+      const del = document.createElement('button');
+      del.innerHTML = '&times;'; del.title = 'Remove this serve';
+      del.onclick = ()=>{ deleteServe(s.id); renderLogTab(); };
+      row.appendChild(del);
+      el.appendChild(row);
+    });
   }
-  document.getElementById('headerSetVal').textContent = 'SET ' + state.currentSet;
-}
 
-const hadSavedData = loadState();
-applyTheme(currentTheme());
-initSetPicker();
-document.getElementById('awayTeamNameInput').value = state.teams.away.name;
-updateAwayName(state.teams.away.name);
-renderRoster('home');
-renderRoster('away');
-renderStatsTables();
-renderLogs();
-updateUndoButton();
-renderCourtTracker();
-if(hadSavedData){
-  document.getElementById('lastActionToast').innerHTML = 'Restored your saved match data from this device.';
-}
+  function flashLastAdded(){
+    if(!lastAdded) return;
+    const btn = document.getElementById('universalEnter');
+    if(btn){
+      btn.textContent = 'Logged ✓';
+      btn.classList.add('logged');
+      setTimeout(()=>{ btn.textContent = 'Enter'; btn.classList.remove('logged'); }, 450);
+    }
+    const lastText = document.getElementById('universalLast');
+    if(lastText){
+      lastText.textContent = `Logged: R${lastAdded.rotation} · Seam ${lastAdded.seam}${DEPTH_LABEL[lastAdded.depth]} (${DEPTH_HINT[lastAdded.depth]})`;
+    }
+    lastAdded = null;
+  }
+
+  function renderAll(){
+    document.getElementById('opponentInput').value = state.opponent || '';
+    renderHeatFilters();
+    renderHeatSeamLabels();
+    renderHeatmap();
+    renderEntrySetSelect();
+    renderMasterEntry();
+    renderPattern();
+    renderRotationPanels();
+    renderRoster();
+    renderPatternMaps();
+    flashLastAdded();
+  }
+
+  // ---------- print / export ----------
+  function buildPrintReport(){
+    const el = document.getElementById('printReport');
+    const opp = state.opponent ? state.opponent : 'Opponent TBD';
+    const dateStr = new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+    const views = heatMapViews();
+
+    let totalCards = '';
+    let patternCards = '';
+    views.forEach(v=>{
+      const list = v.serves;
+      const matrix = countMatrix(list);
+      const max = maxOf(matrix);
+      let mini = '';
+      DEPTHS.forEach(d=>{
+        SEAMS_HEAT_ORDER.forEach(sm=>{
+          const c = matrix[sm][d];
+          const bg = heatColorFixed(c, max, false);
+          const fg = c===0 ? '#8A919C' : (c/max > 0.55 ? '#FFFFFF' : '#00244D');
+          mini += `<div class="pr-mini-cell" style="background:${bg};color:${fg}">${c}</div>`;
+        });
+      });
+      const card = heatMapCardMarkup(v.title, v.pattern, list, v.detail, true);
+      if(v.type === 'total') totalCards += card;
+      else patternCards += card;
+    });
+
+    let tableRows = '';
+    DEPTHS.forEach(d=>{
+      SEAMS_HEAT_ORDER.forEach(sm=>{
+        let rowCells = '';
+        views.forEach(v=>{
+          const list = v.serves;
+          const c = list.filter(s=>s.seam===sm && s.depth===d).length;
+          rowCells += `<td>${c}</td>`;
+        });
+        tableRows += `<tr><td>Seam ${sm}${DEPTH_LABEL[d]} (${DEPTH_HINT[d]})</td>${rowCells}</tr>`;
+      });
+    });
+    const headerCells = views.map(v=>`<th>${v.title}</th>`).join('');
+
+    el.innerHTML = `
+      <p class="pr-title">Serve Tracking Report</p>
+      <p class="pr-sub">SLU Volleyball vs ${opp} — generated ${dateStr}</p>
+      <section class="pr-section"><h3>Match &amp; Set Totals</h3><div class="pr-grid">${totalCards}</div></section>
+      <section class="pr-section"><h3>Reception Pattern &amp; Rotation</h3><div class="pr-grid">${patternCards}</div></section>
+      <table class="pr-table">
+        <thead><tr><th>Zone</th>${headerCells}</tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    `;
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    buildPrintReport();
+    setTimeout(()=> window.print(), 50);
+  });
+
+  document.getElementById('opponentInput').addEventListener('input', (e)=>{
+    state.opponent = e.target.value;
+    saveState();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+  loadState();
+})();
 </script>
 </body>
 </html>
