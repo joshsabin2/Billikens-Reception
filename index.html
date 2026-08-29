@@ -41,6 +41,13 @@
     text-transform:uppercase;
   }
   button{font-family:inherit;}
+  @keyframes button-hit{
+    0%{transform:scale(1);filter:brightness(1);}
+    45%{transform:scale(.93);filter:brightness(.88);}
+    100%{transform:scale(1);filter:brightness(1);}
+  }
+  button:not(:disabled):active{animation:button-hit .22s ease-out;}
+  @media (prefers-reduced-motion:reduce){button:not(:disabled):active{animation:none;}}
   a{color:inherit;}
 
   /* ---------- header ---------- */
